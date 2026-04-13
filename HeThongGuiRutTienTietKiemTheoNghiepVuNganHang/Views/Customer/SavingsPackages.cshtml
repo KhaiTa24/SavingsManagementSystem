@@ -1,0 +1,144 @@
+@using HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models
+@{
+    ViewData["Title"] = "Gói tiết kiệm";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+    var packages = ViewBag.Packages as List<GoiTietKiem>;
+}
+
+<!-- Hero -->
+<section class="hero" style="background: linear-gradient(135deg, #2a5298 0%, #74a7db 100%); color: #fff; padding: 1.5rem 0; margin-bottom: 2rem;">
+    <div class="container">
+        <div class="text-center">
+            <h2 style="font-weight: 800; margin-bottom: 0.25rem; font-size: 1.8rem;"><i class="fas fa-piggy-bank me-2"></i>Gói tiết kiệm BankSave</h2>
+            <p style="opacity: 0.95; margin-bottom: 0;">Lựa chọn gói tiết kiệm phù hợp với nhu cầu của bạn</p>
+        </div>
+    </div>
+</section>
+
+<div class="container my-4" style="max-width: 1200px;">
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (packages == null || !packages.Any())
+    {
+        <div class="alert alert-warning text-center">
+            <i class="fas fa-info-circle me-2"></i>Hiện tại chưa có gói tiết kiệm nào. Vui lòng quay lại sau.
+        </div>
+        <div class="text-center">
+            <a asp-action="Dashboard" class="btn btn-primary"><i class="fas fa-arrow-left me-2"></i>Quay lại Dashboard</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4 mb-4">
+            @foreach (var pkg in packages)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm hover-card">
+                        <div class="card-header bg-primary text-white text-center">
+                            <h5 class="mb-0">@pkg.TenGoi</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <div class="display-4 fw-bold text-primary">@pkg.LaiSuat%/năm</div>
+                            </div>
+
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                    <strong>Kỳ hạn:</strong> @pkg.KyHanThang tháng
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-money-bill-wave text-success me-2"></i>
+                                    <strong>Số tiền tối thiểu:</strong><br/>
+                                    <span class="ms-4">@string.Format("{0:N0}", pkg.SoTienToiThieu) VNĐ</span>
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-hand-holding-usd text-info me-2"></i>
+                                    <strong>Trả lãi:</strong> @pkg.HinhThucTraLai
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-sync-alt text-warning me-2"></i>
+                                    <strong>Tái tục:</strong> 
+                                    @if (pkg.TaiTucTuDong)
+                                    {
+                                        <span>Tự động</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Không tự động</span>
+                                    }
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-clock text-danger me-2"></i>
+                                    <strong>Rút trước hạn:</strong> 
+                                    @if (pkg.ChoPhepRutTruocHan)
+                                    {
+                                        <span class="text-success">Được phép (không lãi)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger">Không được phép</span>
+                                    }
+                                </li>
+                            </ul>
+
+                            @if (!string.IsNullOrEmpty(pkg.MoTa))
+                            {
+                                <div class="alert alert-light mt-3">
+                                    <small><i class="fas fa-info-circle me-1"></i>@pkg.MoTa</small>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer bg-white border-top-0">
+                            <a asp-action="OpenSavingsBook" asp-route-packageId="@pkg.MaGoiTietKiem" 
+                               class="btn btn-primary w-100 btn-lg">
+                                <i class="fas fa-check-circle me-2"></i>Mở ngay
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card bg-light mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-lightbulb text-warning me-2"></i>Lưu ý quan trọng</h5>
+                <ul class="mb-0">
+                    <li>Số tiền gửi tối thiểu: <strong>200,000 VNĐ</strong></li>
+                    <li>Số tiền gửi phải là <strong>bội số của 100,000 VNĐ</strong></li>
+                    <li>Tiền sẽ được trừ từ tài khoản ngân hàng của bạn</li>
+                    <li>Lãi suất có thể thay đổi theo chính sách của ngân hàng</li>
+                    <li>Vui lòng đọc kỹ điều khoản trước khi mở sổ</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="text-center mb-4">
+            <a asp-action="Dashboard" class="btn btn-secondary btn-lg">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại Dashboard
+            </a>
+        </div>
+    }
+</div>
+
+@section Styles {
+<style>
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15) !important;
+    }
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+</style>
+}

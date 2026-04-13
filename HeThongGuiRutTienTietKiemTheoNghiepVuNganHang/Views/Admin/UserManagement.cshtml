@@ -1,0 +1,219 @@
+@using HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models
+@using System.Collections.Generic
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    Layout = "_LayoutAdmin";
+    var users = ViewBag.Users as List<User>;
+    var userRoles = ViewBag.UserRoles as Dictionary<string, IList<string>>;
+    var q = ViewBag.Query as string;
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Quản trị</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Admin")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Overview" ? "active" : "")"><i class="fas fa-tachometer-alt me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("UserManagement","Admin")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "UserManagement" ? "active" : "")"><i class="fas fa-users-cog me-2"></i>Quản lý người dùng</a></li>
+            <li class="category-item"><a href="@Url.Action("LoginHistory","Admin")"><i class="fas fa-history me-2"></i>Lịch sử đăng nhập</a></li>
+            <li class="category-item"><a href="@Url.Action("ActiveSessions","Admin")"><i class="fas fa-user-clock me-2"></i>Session đang hoạt động</a></li>
+            <li class="category-item"><a href="@Url.Action("SuspiciousLogins","Admin")"><i class="fas fa-exclamation-triangle me-2"></i>Đăng nhập bất thường</a></li>
+            <li class="category-item"><a href="@Url.Action("RoleManagement","Admin")"><i class="fas fa-user-tag me-2"></i>Quản lý vai trò</a></li>
+            <li class="category-item"><a href="@Url.Action("SystemNotifications","Admin")"><i class="fas fa-bullhorn me-2"></i>Thông báo hệ thống</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageBranches","Admin")"><i class="fas fa-building me-2"></i>Quản lý chi nhánh</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageServices","Admin")"><i class="fas fa-concierge-bell me-2"></i>Quản lý loại dịch vụ</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        @if (TempData["ActionMessage"] != null)
+        {
+            <div class="alert alert-success mb-3" role="alert">
+                <i class="fas fa-check-circle me-2"></i> @TempData["ActionMessage"]
+            </div>
+        }
+
+        <!-- Bộ lọc gọn gàng -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter me-1"></i>Bộ lọc
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="name">Tên người dùng</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="email">Email</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="username">Tên đăng nhập</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="role">Vai trò</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div id="filterInputContainer" class="d-flex align-items-center gap-2">
+                            <!-- Các input lọc sẽ được hiển thị ở đây -->
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button id="applyFilter" class="btn btn-primary">
+                            <i class="fas fa-filter me-1"></i>Áp dụng
+                        </button>
+                        <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Form ẩn để submit -->
+                <form id="filterForm" method="get" asp-controller="Admin" asp-action="UserManagement" class="d-none">
+                    <input type="hidden" name="q" id="filterName" value="@q" />
+                    <input type="hidden" name="email" id="filterEmail" value="@ViewBag.Email" />
+                    <input type="hidden" name="username" id="filterUsername" value="@ViewBag.Username" />
+                    <input type="hidden" name="role" id="filterRole" value="@ViewBag.Role" />
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><i class="fas fa-users-cog me-2"></i>Danh sách người dùng</div>
+            <div class="card-body p-0">
+                @if (users != null && users.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
+                                    <th>Username</th>
+                                    <th>Vai trò</th>
+                                    <th style="width:420px">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var u in users)
+                                {
+                                    var roles = (userRoles != null && userRoles.ContainsKey(u.Id)) ? userRoles[u.Id] : new List<string>();
+                                    <tr>
+                                        <td><i class="fas fa-user me-1"></i>@(u.HoTen ?? u.UserName)</td>
+                                        <td>@u.Email</td>
+                                        <td>@u.UserName</td>
+                                        <td>@(roles != null && roles.Any() ? string.Join(", ", roles) : "(None)")</td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <form asp-controller="Admin" asp-action="LockUser" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="userId" value="@u.Id" />
+                                                    <button class="btn btn-warning btn-sm" type="submit"><i class="fas fa-lock me-1"></i>Khóa</button>
+                                                </form>
+                                                <form asp-controller="Admin" asp-action="UnlockUser" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="userId" value="@u.Id" />
+                                                    <button class="btn btn-success btn-sm" type="submit"><i class="fas fa-unlock me-1"></i>Mở khóa</button>
+                                                </form>
+                                                <form asp-controller="Admin" asp-action="ResetPassword" method="post" class="d-inline-flex align-items-center gap-1">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="userId" value="@u.Id" />
+                                                    <input class="form-control form-control-sm" style="width:160px" type="text" name="newPassword" placeholder="Mật khẩu mới" />
+                                                    <button class="btn btn-danger btn-sm" type="submit"><i class="fas fa-key me-1"></i>Đặt lại</button>
+                                                </form>
+                                                <form asp-controller="Admin" asp-action="AssignRole" method="post" class="d-inline-flex align-items-center gap-1">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="userId" value="@u.Id" />
+                                                    <select class="form-select form-select-sm" name="roleName" style="width:180px">
+                                                        <option value="KhachHang">Khách hàng</option>
+                                                        <option value="NhanVienGiaoDich">Nhân viên giao dịch</option>
+                                                        <option value="NhanVienQuanLy">Nhân viên quản lý</option>
+                                                        <option value="Admin">Admin</option>
+                                                    </select>
+                                                    <button class="btn btn-primary btn-sm" type="submit"><i class="fas fa-user-tag me-1"></i>Gán vai trò</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted p-4">
+                        <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                        Không có người dùng.
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        let currentFilter = '';
+        
+        // Xử lý khi chọn tùy chọn lọc
+        $('.filter-option').on('click', function(e) {
+            e.preventDefault();
+            const filterType = $(this).data('filter');
+            currentFilter = filterType;
+            
+            // Xóa input hiện tại
+            $('#filterInputContainer').empty();
+            
+            // Thêm input tương ứng
+            switch(filterType) {
+                case 'name':
+                    $('#filterInputContainer').append(`
+                        <input type="text" id="nameInput" class="form-control" placeholder="Nhập tên người dùng" value="${$('#filterName').val()}">
+                    `);
+                    break;
+                case 'email':
+                    $('#filterInputContainer').append(`
+                        <input type="email" id="emailInput" class="form-control" placeholder="Nhập email" value="${$('#filterEmail').val()}">
+                    `);
+                    break;
+                case 'username':
+                    $('#filterInputContainer').append(`
+                        <input type="text" id="usernameInput" class="form-control" placeholder="Nhập tên đăng nhập" value="${$('#filterUsername').val()}">
+                    `);
+                    break;
+                case 'role':
+                    $('#filterInputContainer').append(`
+                        <select id="roleInput" class="form-select">
+                            <option value="">Tất cả vai trò</option>
+                            <option value="KhachHang" ${$('#filterRole').val() === 'KhachHang' ? 'selected' : ''}>Khách hàng</option>
+                            <option value="NhanVienGiaoDich" ${$('#filterRole').val() === 'NhanVienGiaoDich' ? 'selected' : ''}>Nhân viên giao dịch</option>
+                            <option value="NhanVienQuanLy" ${$('#filterRole').val() === 'NhanVienQuanLy' ? 'selected' : ''}>Nhân viên quản lý</option>
+                            <option value="Admin" ${$('#filterRole').val() === 'Admin' ? 'selected' : ''}>Admin</option>
+                        </select>
+                    `);
+                    break;
+            }
+        });
+        
+        // Xử lý khi nhấn nút Áp dụng
+        $('#applyFilter').on('click', function() {
+            // Cập nhật giá trị hidden inputs
+            switch(currentFilter) {
+                case 'name':
+                    $('#filterName').val($('#nameInput').val());
+                    break;
+                case 'email':
+                    $('#filterEmail').val($('#emailInput').val());
+                    break;
+                case 'username':
+                    $('#filterUsername').val($('#usernameInput').val());
+                    break;
+                case 'role':
+                    $('#filterRole').val($('#roleInput').val());
+                    break;
+            }
+            
+            // Submit form
+            $('#filterForm').submit();
+        });
+    });
+</script>
+}

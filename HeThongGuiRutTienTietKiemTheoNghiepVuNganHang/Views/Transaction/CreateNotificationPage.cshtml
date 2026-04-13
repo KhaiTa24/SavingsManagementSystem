@@ -1,0 +1,97 @@
+@{
+    ViewData["Title"] = "Tạo thông báo";
+    Layout = "_LayoutTransaction";
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Transaction")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Overview" ? "active" : "")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("Customers","Transaction")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("Deposit","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Nạp tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("Withdraw","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Rút tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("OpenSavingsBook","Transaction")"><i class="fas fa-book me-2"></i>Mở sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("Create","DailyReport")"><i class="fas fa-file-alt me-2"></i>Tạo báo cáo</a></li>
+            <li class="category-item"><a href="@Url.Action("CreateNotificationPage","Transaction")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "CreateNotificationPage" ? "active" : "")"><i class="fas fa-bell me-2"></i>Tạo thông báo</a></li>
+            <li class="category-item"><a href="@Url.Action("IncidentReportPage","Transaction")"><i class="fas fa-exclamation-triangle me-2"></i>Báo cáo sự cố</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-bell me-2"></i>Tạo thông báo</h3>
+            </div>
+            <div class="card-body">
+                <form asp-controller="Transaction" asp-action="CreateNotification" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">Số tài khoản</label>
+                        <input class="form-control" type="text" id="accountNumber" name="accountNumber" placeholder="Nhập số tài khoản" />
+                    </div>
+                    <div class="mb-3" id="customerInfo" style="display: none;">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5>Thông tin khách hàng</h5>
+                                <p><strong>Họ tên:</strong> <span id="customerName"></span></p>
+                                <p><strong>CCCD:</strong> <span id="customerCCCD"></span></p>
+                                <p><strong>Email:</strong> <span id="customerEmail"></span></p>
+                                <p><strong>Số điện thoại:</strong> <span id="customerPhone"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tiêu đề</label>
+                        <input class="form-control" type="text" name="title" placeholder="Nhập tiêu đề thông báo" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nội dung</label>
+                        <textarea class="form-control" name="content" rows="4" placeholder="Nhập nội dung thông báo"></textarea>
+                    </div>
+                    <button class="btn btn-primary" type="submit"><i class="fas fa-paper-plane me-2"></i>Gửi thông báo</button>
+                </form>
+                
+                @if (TempData["ActionMessage"] != null)
+                {
+                    <div class="alert alert-info mt-3">@TempData["ActionMessage"]</div>
+                }
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        $('#accountNumber').on('blur', function() {
+            var accountNumber = $(this).val();
+            if (accountNumber.length > 0) {
+                $.ajax({
+                    url: '@Url.Action("GetCustomerInfo", "Transaction")',
+                    type: 'GET',
+                    data: { accountNumber: accountNumber },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#customerName').text(response.customerName);
+                            $('#customerCCCD').text(response.cccd || 'Chưa cập nhật');
+                            $('#customerEmail').text(response.email || 'Chưa cập nhật');
+                            $('#customerPhone').text(response.phoneNumber || 'Chưa cập nhật');
+                            $('#customerInfo').show();
+                        } else {
+                            $('#customerInfo').hide();
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        $('#customerInfo').hide();
+                        alert('Có lỗi xảy ra khi lấy thông tin khách hàng.');
+                    }
+                });
+            } else {
+                $('#customerInfo').hide();
+            }
+        });
+    });
+</script>
+}

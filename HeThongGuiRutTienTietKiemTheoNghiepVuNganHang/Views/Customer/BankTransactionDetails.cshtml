@@ -1,0 +1,122 @@
+@model HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.GiaoDichNganHang
+
+@{
+    ViewData["Title"] = "Chi tiết giao dịch ngân hàng";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="fas fa-file-invoice-dollar me-2"></i>@ViewData["Title"]</h2>
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Thông tin chi tiết giao dịch</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Mã giao dịch:</dt>
+                                <dd class="col-sm-8"><strong>#@Model.MaGD</strong></dd>
+
+                                <dt class="col-sm-4">Số tài khoản:</dt>
+                                <dd class="col-sm-8">@Model.SoTaiKhoan</dd>
+
+                                <dt class="col-sm-4">Loại giao dịch:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-@(Model.LoaiGD == "Nạp tiền" ? "success" : "warning")">
+                                        @Model.LoaiGD
+                                    </span>
+                                </dd>
+
+                                <dt class="col-sm-4">Số tiền:</dt>
+                                <dd class="col-sm-8"><strong>@string.Format("{0:N0}", Model.SoTien) đ</strong></dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Ngày giao dịch:</dt>
+                                <dd class="col-sm-8">@Model.NgayGD.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                                <dt class="col-sm-4">Trạng thái:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-@(Model.TrangThaiGD == "Thành công" ? "success" : "danger")">
+                                        @Model.TrangThaiGD
+                                    </span>
+                                </dd>
+
+                                <dt class="col-sm-4">Nhân viên thực hiện:</dt>
+                                <dd class="col-sm-8">@(Model.NhanVien?.HoTen ?? "Không xác định")</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-university me-2"></i>Thông tin tài khoản ngân hàng</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Số tài khoản:</dt>
+                        <dd class="col-sm-9"><strong>@Model.TaiKhoanNganHang.SoTaiKhoan</strong></dd>
+
+                        <dt class="col-sm-3">Số dư hiện tại:</dt>
+                        <dd class="col-sm-9"><span class="badge bg-primary">@string.Format("{0:N0}", Model.TaiKhoanNganHang.SoDu) đ</span></dd>
+
+                        <dt class="col-sm-3">Trạng thái:</dt>
+                        <dd class="col-sm-9">
+                            <span class="badge bg-@(Model.TaiKhoanNganHang.TrangThai == "Hoạt động" ? "success" : "secondary")">
+                                @Model.TaiKhoanNganHang.TrangThai
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-3">Ngày mở tài khoản:</dt>
+                        <dd class="col-sm-9">@Model.TaiKhoanNganHang.NgayMoTaiKhoan.ToString("dd/MM/yyyy")</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="@Url.Action("CounterTransactions", "Customer")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách giao dịch
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .card {
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            border: none;
+        }
+
+        .card-header {
+            border-radius: 16px 16px 0 0 !important;
+        }
+
+        .badge {
+            border-radius: 8px;
+            padding: 0.5em 0.75em;
+        }
+
+        dl.row dt {
+            font-weight: 600;
+            color: #495057;
+        }
+    </style>
+}

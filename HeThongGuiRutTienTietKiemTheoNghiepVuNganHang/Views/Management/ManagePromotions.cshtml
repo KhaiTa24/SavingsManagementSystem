@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Khuyến mãi & Ưu đãi";
+    Layout = "_LayoutManagement";
+    var p = ViewBag.Product as HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.GoiTietKiem;
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Management")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("TransactionApproval","Management")"><i class="fas fa-check-circle me-2"></i>Duyệt giao dịch</a></li>
+            <li class="category-item"><a href="@Url.Action("SavingsBookManagement","Management")"><i class="fas fa-book me-2"></i>Quản lý sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("TermDepositProducts","Management")"><i class="fas fa-box me-2"></i>Gói tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("TellerManagement","Management")"><i class="fas fa-users-cog me-2"></i>Quản lý nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("CustomerManagement","Management")" class="active"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("DailyReports","Management")"><i class="fas fa-file-alt me-2"></i>Báo cáo nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageAppointments","Management")"><i class="fas fa-calendar-alt me-2"></i>Quản lý lịch hẹn</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-gift me-2"></i>Khuyến mãi cho gói: @p?.TenGoi (#@p?.MaGoiTietKiem)</div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> Chức năng quản lý khuyến mãi/ưu đãi sẽ được bổ sung khi có bảng dữ liệu chính sách. Hiện tại, bạn có thể ghi chú trong phần mô tả của gói.
+                </div>
+                <a class="btn btn-secondary" asp-controller="Management" asp-action="TermDepositProducts">Quay lại</a>
+            </div>
+        </div>
+    </section>
+</div>

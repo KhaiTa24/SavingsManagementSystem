@@ -1,0 +1,63 @@
+@model HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.User
+@{
+    ViewData["Title"] = "Cập nhật liên hệ khách hàng";
+    Layout = "_LayoutTransaction";
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Transaction")" class="active"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("Customers","Transaction")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("Deposit","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Nạp tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("Withdraw","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Rút tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("OpenSavingsBook","Transaction")"><i class="fas fa-book me-2"></i>Mở sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("Create","DailyReport")"><i class="fas fa-file-alt me-2"></i>Tạo báo cáo</a></li>
+            <li class="category-item"><a href="@Url.Action("CreateNotificationPage","Transaction")"><i class="fas fa-bell me-2"></i>Tạo thông báo</a></li>
+            <li class="category-item"><a href="@Url.Action("IncidentReportPage","Transaction")"><i class="fas fa-exclamation-triangle me-2"></i>Báo cáo sự cố</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-edit me-2"></i>Cập nhật liên hệ khách hàng</h3>
+            </div>
+            <div class="card-body">
+                <form asp-controller="Transaction" asp-action="UpdateCustomerContactPage" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model?.Id" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Họ tên</label>
+                        <input class="form-control" type="text" value="@Model?.HoTen" disabled />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input class="form-control" type="email" name="email" value="@Model?.Email" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input class="form-control" type="text" name="phoneNumber" value="@Model?.SDT" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        <input class="form-control" type="text" name="address" value="@Model?.DiaChi" />
+                    </div>
+                    
+                    <button class="btn btn-primary" type="submit"><i class="fas fa-save me-2"></i>Cập nhật</button>
+                    <a href="@Url.Action("Customers", "Transaction")" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Quay lại</a>
+                </form>
+                
+                @if (TempData["ActionMessage"] != null)
+                {
+                    <div class="alert alert-info mt-3">@TempData["ActionMessage"]</div>
+                }
+            </div>
+        </div>
+    </section>
+</div>

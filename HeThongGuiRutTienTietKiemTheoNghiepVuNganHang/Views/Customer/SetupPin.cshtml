@@ -1,0 +1,50 @@
+@{
+    ViewData["Title"] = "Thiết lập Mã PIN Digital OTP";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-key me-2"></i>Thiết lập Mã PIN Digital OTP</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Vui lòng tạo một mã PIN gồm 6 chữ số để xác thực các giao dịch nhạy cảm.</p>
+                    
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                    }
+                    
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                    }
+                    
+                    <form asp-action="SetupPin" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Mã PIN Digital OTP</label>
+                            <input type="password" class="form-control" name="pin" placeholder="Nhập mã PIN 6 chữ số" required maxlength="6" minlength="6" />
+                            <div class="form-text">Mã PIN phải gồm 6 chữ số và chỉ được chứa chữ số.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Xác nhận Mã PIN</label>
+                            <input type="password" class="form-control" name="confirmPin" placeholder="Nhập lại mã PIN" required maxlength="6" minlength="6" />
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check me-2"></i>Thiết lập PIN
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

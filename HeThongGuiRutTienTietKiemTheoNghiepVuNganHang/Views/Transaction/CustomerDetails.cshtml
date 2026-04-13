@@ -1,0 +1,188 @@
+@using HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models
+@{
+    ViewData["Title"] = "Chi tiết khách hàng";
+    Layout = "_LayoutTransaction";
+    var kh = ViewBag.Customer as User;
+    var bankAccounts = ViewBag.BankAccounts as List<TaiKhoanNganHang> ?? new List<TaiKhoanNganHang>();
+    var recentTransactions = ViewBag.RecentTransactions as List<GiaoDichTietKiem> ?? new List<GiaoDichTietKiem>();
+    decimal totalSavings = ViewBag.TotalSavings != null ? (decimal)ViewBag.TotalSavings : 0M;
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Transaction")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Overview" ? "active" : "")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("Customers","Transaction")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Customers" || ViewContext.RouteData.Values["Action"].ToString() == "CustomerDetails" ? "active" : "")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("Deposit","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Nạp tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("Withdraw","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Rút tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("OpenSavingsBook","Transaction")"><i class="fas fa-book me-2"></i>Mở sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("Create","DailyReport")"><i class="fas fa-file-alt me-2"></i>Tạo báo cáo</a></li>
+            <li class="category-item"><a href="@Url.Action("CreateNotificationPage","Transaction")"><i class="fas fa-bell me-2"></i>Tạo thông báo</a></li>
+            <li class="category-item"><a href="@Url.Action("IncidentReportPage","Transaction")"><i class="fas fa-exclamation-triangle me-2"></i>Báo cáo sự cố</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        @if (kh != null)
+        {
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-user-circle me-2"></i>Thông tin khách hàng
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-signature me-2 text-primary"></i>Họ tên:</strong> @kh.HoTen</p>
+                            <p><strong><i class="fas fa-envelope me-2 text-primary"></i>Email:</strong> @kh.Email</p>
+                            <p><strong><i class="fas fa-phone me-2 text-primary"></i>SĐT:</strong> @kh.SDT</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-id-card me-2 text-primary"></i>CCCD:</strong> @kh.CCCD</p>
+                            <p><strong><i class="fas fa-user-tag me-2 text-primary"></i>Vai trò:</strong> <span class="badge bg-primary">@kh.Role</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="icon me-3"><i class="fas fa-wallet"></i></div>
+                                <div>
+                                    <div class="stat-number">@string.Format("{0:N0}", totalSavings) đ</div>
+                                    <div class="stat-label">Tổng tiền tiết kiệm</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="icon me-3"><i class="fas fa-credit-card"></i></div>
+                                <div>
+                                    <div class="stat-number">@bankAccounts.Count</div>
+                                    <div class="stat-label">Số tài khoản ngân hàng</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="icon me-3"><i class="fas fa-book"></i></div>
+                                <div>
+                                    <div class="stat-number">@bankAccounts.Sum(b => b.SoTietKiems.Count)</div>
+                                    <div class="stat-label">Số sổ tiết kiệm</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-university me-2"></i>Tài khoản ngân hàng
+                </div>
+                <div class="card-body p-0">
+                    @if (bankAccounts.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Số tài khoản</th>
+                                        <th>Số dư</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ngày mở</th>
+                                        <th>Số sổ TK</th>
+                                        <th>Tổng tiền gửi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var b in bankAccounts)
+                                    {
+                                        <tr>
+                                            <td><i class="fas fa-credit-card me-2 text-primary"></i>@b.SoTaiKhoan</td>
+                                            <td><span class="badge bg-success">@string.Format("{0:N0}", b.SoDu) đ</span></td>
+                                            <td><span class="badge bg-info">@b.TrangThai</span></td>
+                                            <td>@b.NgayMoTaiKhoan.ToString("dd/MM/yyyy")</td>
+                                            <td>@b.SoTietKiems.Count</td>
+                                            <td>@string.Format("{0:N0}", b.SoTietKiems.Sum(s => s.SoTienGui)) đ</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted p-4">
+                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                            Khách hàng chưa có tài khoản ngân hàng.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-exchange-alt me-2"></i>Giao dịch gần đây
+                </div>
+                <div class="card-body p-0">
+                    @if (recentTransactions.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Mã GD</th>
+                                        <th>Loại</th>
+                                        <th>Ngày</th>
+                                        <th>Số tiền</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var g in recentTransactions)
+                                    {
+                                        <tr>
+                                            <td><i class="fas fa-hashtag me-1 text-muted"></i>@g.MaGD</td>
+                                            <td><span class="badge bg-@(g.LoaiGD == "Gửi" ? "success" : "warning")">@g.LoaiGD</span></td>
+                                            <td>@g.NgayGD.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td><strong>@string.Format("{0:N0}", g.SoTien) đ</strong></td>
+                                            <td><span class="badge bg-primary">@g.TrangThaiGD</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted p-4">
+                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                            Không có giao dịch gần đây.
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body text-center text-muted p-5">
+                    <i class="fas fa-exclamation-circle fa-4x mb-3 d-block"></i>
+                    <p class="fs-5">Không tìm thấy khách hàng.</p>
+                </div>
+            </div>
+        }
+    </section>
+</div>

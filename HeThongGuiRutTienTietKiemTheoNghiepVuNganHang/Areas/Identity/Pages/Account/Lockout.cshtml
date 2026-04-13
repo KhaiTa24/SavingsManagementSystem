@@ -1,0 +1,40 @@
+@page
+@model LockoutModel
+@{
+    ViewData["Title"] = "Tài khoản bị khóa";
+}
+
+<header>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow">
+                    <div class="card-header bg-danger text-white text-center">
+                        <h3><i class="fas fa-lock me-2"></i>@ViewData["Title"]</h3>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-user-lock fa-3x text-danger"></i>
+                        </div>
+                        <h4 class="text-danger mb-3">Tài khoản của bạn đã bị khóa</h4>
+                        <p class="lead">
+                            Tài khoản của bạn đã bị khóa do đăng nhập thất bại quá 5 lần.
+                        </p>
+                        <p>
+                            Vui lòng thử lại sau <strong>15 phút</strong> hoặc liên hệ với quản trị viên để được hỗ trợ.
+                        </p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Lưu ý:</strong> Đây là biện pháp bảo mật để bảo vệ tài khoản của bạn khỏi các cuộc tấn công brute-force.
+                        </div>
+                        <div class="mt-4">
+                            <a href="@Url.Page("./Login")" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Quay lại trang đăng nhập
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

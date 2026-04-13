@@ -1,0 +1,267 @@
+@{
+    ViewData["Title"] = "Đặt lịch hẹn";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>Đặt lịch hẹn giao dịch tại quầy</h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="BookAppointment" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Loại giao dịch/Dịch vụ</label>
+                            <select name="maDV" class="form-select" required>
+                                <option value="">-- Chọn dịch vụ --</option>
+                                @foreach (var service in ViewBag.Services as List<LoaiDichVu>)
+                                {
+                                    <option value="@service.MaDV">@service.TenDV</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Chọn Chi nhánh</label>
+                            <select name="maCN" id="branchSelect" class="form-select" required>
+                                <option value="">-- Chọn chi nhánh --</option>
+                                @foreach (var branch in ViewBag.Branches as List<ChiNhanh>)
+                                {
+                                    <option value="@branch.MaCN" data-hours="@branch.GioLamViec">@branch.TenChiNhanh - @branch.DiaChi</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Chọn Ngày</label>
+                            <input type="date" name="ngayGiaoDich" id="dateInput" class="form-control" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Chọn Giờ</label>
+                            <select name="khungGio" id="timeSlotSelect" class="form-select" required>
+                                <option value="">-- Chọn khung giờ --</option>
+                                <!-- Các khung giờ sẽ được cập nhật bởi JavaScript -->
+                            </select>
+                            <div class="form-text text-info mt-1">
+                                <i class="fas fa-info-circle"></i> Lưu ý: Mỗi khung giờ là 15 phút. Một số giao dịch phức tạp có thể cần thêm thời gian xử lý (tối đa 15 phút).
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ghi chú (Tùy chọn)</label>
+                            <textarea name="ghiChuKH" class="form-control" rows="3" placeholder="Nhập ghi chú nếu có..."></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Dashboard" class="btn btn-secondary me-md-2">Quay lại</a>
+                            <button type="submit" class="btn btn-primary">Đặt lịch hẹn</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const branchSelect = document.getElementById('branchSelect');
+        const dateInput = document.getElementById('dateInput');
+        const timeSlotSelect = document.getElementById('timeSlotSelect');
+
+        // Lắng nghe sự kiện thay đổi chi nhánh
+        branchSelect.addEventListener('change', function () {
+            updateAvailableTimeSlots();
+        });
+
+        // Lắng nghe sự kiện thay đổi ngày
+        dateInput.addEventListener('change', function () {
+            updateAvailableTimeSlots();
+        });
+
+        // Hàm cập nhật các khung giờ khả dụng
+        function updateAvailableTimeSlots() {
+            const selectedBranchId = branchSelect.value;
+            const selectedDate = dateInput.value;
+            
+            // Xóa các tùy chọn khung giờ hiện tại
+            timeSlotSelect.innerHTML = '<option value="">-- Chọn khung giờ --</option>';
+            
+            // Kiểm tra nếu đã chọn chi nhánh và ngày
+            if (!selectedBranchId || !selectedDate) {
+                return;
+            }
+            
+            // Lấy giờ làm việc của chi nhánh được chọn
+            const selectedOption = branchSelect.options[branchSelect.selectedIndex];
+            const workingHours = selectedOption.getAttribute('data-hours');
+            
+            if (workingHours) {
+                // Phân tích chuỗi giờ làm việc để tạo các khung giờ
+                const timeSlots = generateTimeSlots(workingHours);
+                
+                // Gọi API để lấy danh sách các khung giờ đã được đặt
+                fetch(`/Customer/GetBookedTimeSlots?branchId=${selectedBranchId}&date=${selectedDate}`)
+                    .then(response => response.json())
+                    .then(bookedSlots => {
+                        // Lọc các khung giờ đã được đặt và đã duyệt
+                        const filteredTimeSlots = timeSlots.filter(slot => !bookedSlots.includes(slot));
+                        
+                        // Thêm các khung giờ vào select
+                        filteredTimeSlots.forEach(slot => {
+                            const option = document.createElement('option');
+                            option.value = slot;
+                            option.textContent = slot;
+                            timeSlotSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching booked time slots:', error);
+                        // Nếu có lỗi, vẫn hiển thị tất cả các khung giờ
+                        timeSlots.forEach(slot => {
+                            const option = document.createElement('option');
+                            option.value = slot;
+                            option.textContent = slot;
+                            timeSlotSelect.appendChild(option);
+                        });
+                    });
+            }
+        }
+
+        // Hàm tạo các khung giờ từ chuỗi giờ làm việc
+        function generateTimeSlots(workingHours) {
+            // Hàm đơn giản để tạo khung giờ 15 phút từ chuỗi giờ làm việc
+            // Ví dụ: "08:00 - 17:00" sẽ tạo các khung giờ 08:00-08:15, 08:15-08:30, v.v.
+            
+            // Mặc định nếu không có giờ làm việc
+            if (!workingHours) {
+                return [
+                    '08:00-08:15',
+                    '08:15-08:30',
+                    '08:30-08:45',
+                    '08:45-09:00',
+                    '09:00-09:15',
+                    '09:15-09:30',
+                    '09:30-09:45',
+                    '09:45-10:00',
+                    '10:00-10:15',
+                    '10:15-10:30',
+                    '10:30-10:45',
+                    '10:45-11:00',
+                    '11:00-11:15',
+                    '11:15-11:30',
+                    '11:30-11:45',
+                    '11:45-12:00',
+                    '13:00-13:15',
+                    '13:15-13:30',
+                    '13:30-13:45',
+                    '13:45-14:00',
+                    '14:00-14:15',
+                    '14:15-14:30',
+                    '14:30-14:45',
+                    '14:45-15:00',
+                    '15:00-15:15',
+                    '15:15-15:30',
+                    '15:30-15:45',
+                    '15:45-16:00',
+                    '16:00-16:15',
+                    '16:15-16:30',
+                    '16:30-16:45',
+                    '16:45-17:00'
+                ];
+            }
+            
+            // Phân tích chuỗi giờ làm việc
+            const timePattern = /(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/;
+            const match = workingHours.match(timePattern);
+            
+            if (!match) {
+                // Nếu không phân tích được, sử dụng mặc định
+                return [
+                    '08:00-08:15',
+                    '08:15-08:30',
+                    '08:30-08:45',
+                    '08:45-09:00',
+                    '09:00-09:15',
+                    '09:15-09:30',
+                    '09:30-09:45',
+                    '09:45-10:00',
+                    '10:00-10:15',
+                    '10:15-10:30',
+                    '10:30-10:45',
+                    '10:45-11:00',
+                    '11:00-11:15',
+                    '11:15-11:30',
+                    '11:30-11:45',
+                    '11:45-12:00',
+                    '13:00-13:15',
+                    '13:15-13:30',
+                    '13:30-13:45',
+                    '13:45-14:00',
+                    '14:00-14:15',
+                    '14:15-14:30',
+                    '14:30-14:45',
+                    '14:45-15:00',
+                    '15:00-15:15',
+                    '15:15-15:30',
+                    '15:30-15:45',
+                    '15:45-16:00',
+                    '16:00-16:15',
+                    '16:15-16:30',
+                    '16:30-16:45',
+                    '16:45-17:00'
+                ];
+            }
+            
+            const startTime = match[1];
+            const endTime = match[2];
+            
+            // Chuyển đổi thời gian thành phút
+            const startMinutes = timeToMinutes(startTime);
+            const endMinutes = timeToMinutes(endTime);
+            
+            const slots = [];
+            let currentStart = startMinutes;
+            
+            // Tạo khung giờ 15 phút
+            while (currentStart + 15 <= endMinutes) {
+                const slotStart = minutesToTime(currentStart);
+                const slotEnd = minutesToTime(currentStart + 15);
+                slots.push(`${slotStart}-${slotEnd}`);
+                currentStart += 15;
+            }
+            
+            return slots;
+        }
+        
+        function timeToMinutes(time) {
+            const [hours, minutes] = time.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+        
+        function minutesToTime(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+        }
+    });
+</script>

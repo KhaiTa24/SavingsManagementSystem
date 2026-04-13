@@ -1,0 +1,292 @@
+@{
+    ViewData["Title"] = "Quản lý giao dịch tại quầy";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="fas fa-exchange-alt me-2"></i>@ViewData["Title"]</h2>
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="fas fa-university me-2"></i>Tài khoản ngân hàng của bạn</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Số tài khoản</th>
+                                    <th>Số dư</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày mở</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var bankAccounts = ViewBag.BankAccounts as IEnumerable<HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.TaiKhoanNganHang>;
+                                }
+                                @foreach (var account in bankAccounts)
+                                {
+                                    <tr>
+                                        <td><strong>@account.SoTaiKhoan</strong></td>
+                                        <td><span class="badge bg-primary">@string.Format("{0:N0}", account.SoDu) đ</span></td>
+                                        <td><span class="badge bg-@(account.TrangThai == "Hoạt động" ? "success" : "secondary")">@account.TrangThai</span></td>
+                                        <td>@account.NgayMoTaiKhoan.ToString("dd/MM/yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab navigation -->
+            <ul class="nav nav-tabs mt-4" id="transactionTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="bank-tab" data-bs-toggle="tab" data-bs-target="#bank" type="button" role="tab">Giao dịch ngân hàng</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="savings-tab" data-bs-toggle="tab" data-bs-target="#savings" type="button" role="tab">Giao dịch tiết kiệm</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="books-tab" data-bs-toggle="tab" data-bs-target="#books" type="button" role="tab">Mở sổ tiết kiệm</button>
+                </li>
+            </ul>
+
+            <!-- Tab content -->
+            <div class="tab-content" id="transactionTabsContent">
+                <!-- Bank Transactions Tab -->
+                <div class="tab-pane fade show active" id="bank" role="tabpanel">
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3"><i class="fas fa-history me-2"></i>Giao dịch ngân hàng</h5>
+                            @if (ViewBag.BankTransactions != null)
+                            {
+                                var transactions = ViewBag.BankTransactions as IEnumerable<HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.GiaoDichNganHang>;
+                                if (transactions.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Mã giao dịch</th>
+                                                    <th>Số tài khoản</th>
+                                                    <th>Loại giao dịch</th>
+                                                    <th>Số tiền</th>
+                                                    <th>Ngày giao dịch</th>
+                                                    <th>Trạng thái</th>
+                                                    <th>Nhân viên</th>
+                                                    <th>Hành động</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var transaction in transactions)
+                                                {
+                                                    <tr>
+                                                        <td><strong>#@transaction.MaGD</strong></td>
+                                                        <td>@transaction.SoTaiKhoan</td>
+                                                        <td>
+                                                            <span class="badge bg-@(transaction.LoaiGD == "Nạp tiền" ? "success" : "warning")">
+                                                                @transaction.LoaiGD
+                                                            </span>
+                                                        </td>
+                                                        <td><strong>@string.Format("{0:N0}", transaction.SoTien) đ</strong></td>
+                                                        <td>@transaction.NgayGD.ToString("dd/MM/yyyy HH:mm")</td>
+                                                        <td><span class="badge bg-@(transaction.TrangThaiGD == "Thành công" ? "success" : "danger")">@transaction.TrangThaiGD</span></td>
+                                                        <td>@transaction.NhanVien?.HoTen</td>
+                                                        <td>
+                                                            <a href="@Url.Action("BankTransactionDetails", "Customer", new { id = transaction.MaGD })" class="btn btn-sm btn-primary">
+                                                                <i class="fas fa-eye"></i> Xem chi tiết
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>Không tìm thấy lịch sử giao dịch ngân hàng nào.
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Savings Transactions Tab -->
+                <div class="tab-pane fade" id="savings" role="tabpanel">
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3"><i class="fas fa-history me-2"></i>Giao dịch tiết kiệm</h5>
+                            @if (ViewBag.SavingsTransactions != null)
+                            {
+                                var transactions = ViewBag.SavingsTransactions as IEnumerable<HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.GiaoDichTietKiem>;
+                                if (transactions.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Mã giao dịch</th>
+                                                    <th>Mã sổ tiết kiệm</th>
+                                                    <th>Loại giao dịch</th>
+                                                    <th>Số tiền</th>
+                                                    <th>Ngày giao dịch</th>
+                                                    <th>Trạng thái</th>
+                                                    <th>Nhân viên</th>
+                                                    <th>Hành động</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var transaction in transactions)
+                                                {
+                                                    <tr>
+                                                        <td><strong>#@transaction.MaGD</strong></td>
+                                                        <td>@transaction.MaSTK</td>
+                                                        <td>
+                                                            <span class="badge bg-@(transaction.LoaiGD == "Gửi" ? "success" : "warning")">
+                                                                @transaction.LoaiGD
+                                                            </span>
+                                                        </td>
+                                                        <td><strong>@string.Format("{0:N0}", transaction.SoTien) đ</strong></td>
+                                                        <td>@transaction.NgayGD.ToString("dd/MM/yyyy HH:mm")</td>
+                                                        <td><span class="badge bg-@(transaction.TrangThaiGD == "DaDuyet" ? "success" : "secondary")">@transaction.TrangThaiGD</span></td>
+                                                        <td>@transaction.NhanVien?.HoTen</td>
+                                                        <td>
+                                                            <a href="@Url.Action("SavingsTransactionDetails", "Customer", new { id = transaction.MaGD })" class="btn btn-sm btn-primary">
+                                                                <i class="fas fa-eye"></i> Xem chi tiết
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>Không tìm thấy lịch sử giao dịch tiết kiệm nào.
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Savings Books Tab -->
+                <div class="tab-pane fade" id="books" role="tabpanel">
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3"><i class="fas fa-book me-2"></i>Mở sổ tiết kiệm</h5>
+                            @if (ViewBag.SavingsBooks != null)
+                            {
+                                var savingsBooks = ViewBag.SavingsBooks as IEnumerable<HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.SoTietKiem>;
+                                if (savingsBooks.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Mã sổ tiết kiệm</th>
+                                                    <th>Số tài khoản</th>
+                                                    <th>Số tiền gửi</th>
+                                                    <th>Kỳ hạn</th>
+                                                    <th>Lãi suất</th>
+                                                    <th>Ngày mở sổ</th>
+                                                    <th>Trạng thái</th>
+                                                    <th>Hành động</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var book in savingsBooks)
+                                                {
+                                                    <tr>
+                                                        <td><strong>#@book.MaSTK</strong></td>
+                                                        <td>@book.SoTaiKhoan</td>
+                                                        <td><strong>@string.Format("{0:N0}", book.SoTienGui) đ</strong></td>
+                                                        <td>@book.KyHan tháng</td>
+                                                        <td>@book.LaiSuat%</td>
+                                                        <td>@book.NgayMoSo.ToString("dd/MM/yyyy")</td>
+                                                        <td><span class="badge bg-@(book.TrangThai == "Đang hoạt động" ? "success" : "secondary")">@book.TrangThai</span></td>
+                                                        <td>
+                                                            <a href="@Url.Action("SavingsBookDetailsForCounter", "Customer", new { id = book.MaSTK })" class="btn btn-sm btn-primary">
+                                                                <i class="fas fa-eye"></i> Xem chi tiết
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>Không tìm thấy sổ tiết kiệm nào.
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="@Url.Action("Dashboard", "Customer")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại bảng điều khiển
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .table thead {
+            background: #f0f4ff;
+        }
+
+        .table thead th {
+            color: #1e3c72;
+            font-weight: 600;
+        }
+
+        .badge {
+            border-radius: 8px;
+            padding: 0.5em 0.75em;
+        }
+
+        .card {
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            border: none;
+        }
+
+        .card-title {
+            color: #1e3c72;
+            font-weight: 700;
+        }
+
+        .nav-tabs .nav-link {
+            font-weight: 600;
+            color: #6c757d;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #1e3c72;
+            border-bottom: 3px solid #1e3c72;
+        }
+    </style>
+}

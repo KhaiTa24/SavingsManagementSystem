@@ -1,0 +1,334 @@
+@using HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models
+@{
+    ViewData["Title"] = "Quản lý sổ tiết kiệm";
+    Layout = "_LayoutManagement";
+    var all = ViewBag.AllSavingsBooks as List<SoTietKiem>;
+    var upcoming = ViewBag.UpcomingMaturity as List<SoTietKiem>;
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Management")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("TransactionApproval","Management")"><i class="fas fa-check-circle me-2"></i>Duyệt giao dịch</a></li>
+            <li class="category-item"><a href="@Url.Action("SavingsBookManagement","Management")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "SavingsBookManagement" ? "active" : "")"><i class="fas fa-book me-2"></i>Quản lý sổ tiết kiệm</a></li>
+                        <li class="category-item"><a href="@Url.Action("TermDepositProducts","Management")"><i class="fas fa-box me-2"></i>Gói tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("TellerManagement","Management")"><i class="fas fa-users-cog me-2"></i>Quản lý nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("CustomerManagement","Management")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("DailyReports","Management")"><i class="fas fa-file-alt me-2"></i>Báo cáo nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageAppointments","Management")"><i class="fas fa-calendar-alt me-2"></i>Quản lý lịch hẹn</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        <!-- Bộ lọc sổ tiết kiệm -->
+        <div class="card mb-4">
+            <div class="card-body p-3 bg-light border-bottom">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter me-1"></i>Bộ lọc
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="customer">Khách hàng</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="account">Số tài khoản</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="amount">Số tiền</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="date">Ngày mở</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="status">Trạng thái</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div id="filterInputContainer" class="d-flex align-items-center gap-2 flex-wrap">
+                            <!-- Các input lọc sẽ được hiển thị ở đây -->
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button id="applyFilter" class="btn btn-primary btn-sm">
+                            <i class="fas fa-filter me-1"></i>Áp dụng
+                        </button>
+                        <a href="@Url.Action("SavingsBookManagement", "Management")" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Form ẩn để submit -->
+                <form id="filterForm" method="get" asp-controller="Management" asp-action="SavingsBookManagement" class="d-none">
+                    <input type="hidden" name="customerName" id="filterCustomerName" value="@ViewBag.CustomerName" />
+                    <input type="hidden" name="accountNumber" id="filterAccountNumber" value="@ViewBag.AccountNumber" />
+                    <input type="hidden" name="minAmount" id="filterMinAmount" value="@ViewBag.MinAmount" />
+                    <input type="hidden" name="maxAmount" id="filterMaxAmount" value="@ViewBag.MaxAmount" />
+                    <input type="hidden" name="fromDate" id="filterFromDate" value="@ViewBag.FromDate" />
+                    <input type="hidden" name="toDate" id="filterToDate" value="@ViewBag.ToDate" />
+                    <input type="hidden" name="status" id="filterStatus" value="@ViewBag.Status" />
+                </form>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="section-title mb-0"><i class="fas fa-book me-2"></i>Sổ tiết kiệm sắp đến hạn</h2>
+                <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#exportModal">
+                    <i class="fas fa-file-export me-1"></i>Xuất báo cáo
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    @if (upcoming != null && upcoming.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Mã STK</th>
+                                        <th>Khách hàng</th>
+                                        <th>Số tài khoản</th>
+                                        <th>Số tiền gửi</th>
+                                        <th>Lãi suất</th>
+                                        <th>Ngày mở</th>
+                                        <th>Ngày đáo hạn</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var s in upcoming)
+                                    {
+                                        <tr>
+                                            <td><i class="fas fa-hashtag me-1 text-muted"></i>@s.MaSTK</td>
+                                            <td>@(s.TaiKhoanNganHang?.KhachHang?.HoTen ?? "N/A")</td>
+                                            <td>@(s.TaiKhoanNganHang?.SoTaiKhoan ?? "N/A")</td>
+                                            <td><strong>@string.Format("{0:N0}", s.SoTienGui) đ</strong></td>
+                                            <td>@s.LaiSuat %</td>
+                                            <td>@s.NgayMoSo.ToString("dd/MM/yyyy")</td>
+                                            <td><span class="badge bg-warning">@s.NgayDaoHan.ToString("dd/MM/yyyy")</span></td>
+                                            <td><span class="badge bg-info">@s.TrangThai</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted p-4">
+                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                            Không có sổ tiết kiệm sắp đến hạn trong 30 ngày tới.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h2 class="section-title mb-2"><i class="fas fa-list me-2"></i>Tất cả sổ tiết kiệm</h2>
+            <div class="card">
+                <div class="card-body p-0">
+                    @if (all != null && all.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Mã STK</th>
+                                        <th>Khách hàng</th>
+                                        <th>Số tài khoản</th>
+                                        <th>Số tiền gửi</th>
+                                        <th>Lãi suất</th>
+                                        <th>Ngày mở</th>
+                                        <th>Ngày đáo hạn</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var s in all)
+                                    {
+                                        var isUpcoming = upcoming != null && upcoming.Any(x => x.MaSTK == s.MaSTK);
+                                        <tr class="@(isUpcoming ? "table-warning" : string.Empty)">
+                                            <td><i class="fas fa-hashtag me-1 text-muted"></i>@s.MaSTK</td>
+                                            <td>@(s.TaiKhoanNganHang?.KhachHang?.HoTen ?? "N/A")</td>
+                                            <td>@(s.TaiKhoanNganHang?.SoTaiKhoan ?? "N/A")</td>
+                                            <td><strong>@string.Format("{0:N0}", s.SoTienGui) đ</strong></td>
+                                            <td>@s.LaiSuat %</td>
+                                            <td>@s.NgayMoSo.ToString("dd/MM/yyyy")</td>
+                                            <td>@s.NgayDaoHan.ToString("dd/MM/yyyy")</td>
+                                            <td><span class="badge bg-secondary">@s.TrangThai</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted p-4">
+                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                            Không có dữ liệu sổ tiết kiệm.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        let currentFilter = '';
+        
+        // Xử lý khi chọn tùy chọn lọc
+        $(document).on('click', '.filter-option', function(e) {
+            e.preventDefault();
+            const filterType = $(this).data('filter');
+            currentFilter = filterType;
+            
+            // Xóa input hiện tại
+            $('#filterInputContainer').empty();
+            
+            // Thêm input tương ứng
+            if (filterType === 'customer') {
+                var customerValue = $('#filterCustomerName').val() || '';
+                var inputHtml = '<input type="text" id="customerNameInput" class="form-control form-control-sm" placeholder="Nhập tên khách hàng" value="' + customerValue + '" />';
+                $('#filterInputContainer').append(inputHtml);
+            } else if (filterType === 'account') {
+                var accountValue = $('#filterAccountNumber').val() || '';
+                var inputHtml = '<input type="text" id="accountNumberInput" class="form-control form-control-sm" placeholder="Nhập số tài khoản" value="' + accountValue + '" />';
+                $('#filterInputContainer').append(inputHtml);
+            } else if (filterType === 'amount') {
+                var minAmountValue = $('#filterMinAmount').val() || '';
+                var maxAmountValue = $('#filterMaxAmount').val() || '';
+                var inputHtml = '<input type="number" id="minAmountInput" class="form-control form-control-sm" placeholder="Số tiền tối thiểu" value="' + minAmountValue + '" />' +
+                               '<input type="number" id="maxAmountInput" class="form-control form-control-sm" placeholder="Số tiền tối đa" value="' + maxAmountValue + '" />';
+                $('#filterInputContainer').append(inputHtml);
+            } else if (filterType === 'date') {
+                var fromDateValue = $('#filterFromDate').val() || '';
+                var toDateValue = $('#filterToDate').val() || '';
+                var inputHtml = '<input type="date" id="fromDateInput" class="form-control form-control-sm" placeholder="Từ ngày" value="' + fromDateValue + '" />' +
+                               '<input type="date" id="toDateInput" class="form-control form-control-sm" placeholder="Đến ngày" value="' + toDateValue + '" />';
+                $('#filterInputContainer').append(inputHtml);
+            } else if (filterType === 'status') {
+                var selectedStatus = $('#filterStatus').val() || '';
+                var statusOptions = '<select id="statusInput" class="form-select form-select-sm">';
+                statusOptions += '<option value="">Tất cả trạng thái</option>';
+                statusOptions += '<option value="Đang hoạt động"' + (selectedStatus === 'Đang hoạt động' ? ' selected' : '') + '>Đang hoạt động</option>';
+                statusOptions += '<option value="Đã tất toán"' + (selectedStatus === 'Đã tất toán' ? ' selected' : '') + '>Đã tất toán</option>';
+                statusOptions += '<option value="Đã đóng"' + (selectedStatus === 'Đã đóng' ? ' selected' : '') + '>Đã đóng</option>';
+                statusOptions += '</select>';
+                $('#filterInputContainer').append(statusOptions);
+            }
+        });
+        
+        // Xử lý khi nhấn nút Áp dụng
+        $(document).on('click', '#applyFilter', function() {
+            // Cập nhật giá trị hidden inputs
+            if (currentFilter === 'customer') {
+                $('#filterCustomerName').val($('#customerNameInput').val());
+            } else if (currentFilter === 'account') {
+                $('#filterAccountNumber').val($('#accountNumberInput').val());
+            } else if (currentFilter === 'amount') {
+                $('#filterMinAmount').val($('#minAmountInput').val());
+                $('#filterMaxAmount').val($('#maxAmountInput').val());
+            } else if (currentFilter === 'date') {
+                $('#filterFromDate').val($('#fromDateInput').val());
+                $('#filterToDate').val($('#toDateInput').val());
+            } else if (currentFilter === 'status') {
+                $('#filterStatus').val($('#statusInput').val());
+            }
+            
+            // Submit form
+            $('#filterForm').submit();
+        });
+        
+        // Khởi tạo bộ lọc nếu có giá trị
+        let filterType = '';
+        @if (!string.IsNullOrEmpty(ViewBag.CustomerName?.ToString()))
+        {
+            <text>
+            filterType = 'customer';
+            </text>
+        }
+        else if (!string.IsNullOrEmpty(ViewBag.AccountNumber?.ToString()))
+        {
+            <text>
+            filterType = 'account';
+            </text>
+        }
+        else if (ViewBag.MinAmount != null || ViewBag.MaxAmount != null)
+        {
+            <text>
+            filterType = 'amount';
+            </text>
+        }
+        else if (!string.IsNullOrEmpty(ViewBag.FromDate?.ToString()) || !string.IsNullOrEmpty(ViewBag.ToDate?.ToString()))
+        {
+            <text>
+            filterType = 'date';
+            </text>
+        }
+        else if (!string.IsNullOrEmpty(ViewBag.Status?.ToString()))
+        {
+            <text>
+            filterType = 'status';
+            </text>
+        }
+        
+        if (filterType) {
+            $('.filter-option[data-filter="' + filterType + '"]').trigger('click');
+        }
+        
+        // Xử lý xuất báo cáo
+        $('#exportReportBtn').on('click', function() {
+            var fromDate = $('#exportFromDate').val();
+            var toDate = $('#exportToDate').val();
+            var url = '@Url.Action("ExportSavingsReport", "Management")';
+            
+            if (fromDate || toDate) {
+                url += '?';
+                if (fromDate) {
+                    url += 'fromDate=' + encodeURIComponent(fromDate);
+                }
+                if (fromDate && toDate) {
+                    url += '&';
+                }
+                if (toDate) {
+                    url += 'toDate=' + encodeURIComponent(toDate);
+                }
+            }
+            
+            window.location.href = url;
+        });
+    });
+</script>
+
+<!-- Modal xuất báo cáo -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exportModalLabel">Xuất báo cáo sổ tiết kiệm</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Chọn khoảng thời gian để xuất báo cáo (tùy chọn):</p>
+        <div class="mb-3">
+          <label for="exportFromDate" class="form-label">Từ ngày</label>
+          <input type="date" class="form-control" id="exportFromDate">
+        </div>
+        <div class="mb-3">
+          <label for="exportToDate" class="form-label">Đến ngày</label>
+          <input type="date" class="form-control" id="exportToDate">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-success" id="exportReportBtn">Xuất báo cáo</button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+

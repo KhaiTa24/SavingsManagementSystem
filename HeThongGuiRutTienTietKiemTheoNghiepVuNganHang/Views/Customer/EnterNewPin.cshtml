@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Nhập mã PIN mới";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-lock me-2"></i>Nhập mã PIN mới</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Vui lòng tạo một mã PIN mới gồm 6 chữ số để xác thực các giao dịch nhạy cảm.</p>
+                    
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                    }
+                    
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                    }
+                    
+                    <form asp-action="EnterNewPin" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Mã PIN mới</label>
+                            <input type="password" class="form-control" name="newPin" placeholder="Nhập mã PIN mới 6 chữ số" required maxlength="6" minlength="6" />
+                            <div class="form-text">Mã PIN phải gồm 6 chữ số và chỉ được chứa chữ số.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Xác nhận mã PIN mới</label>
+                            <input type="password" class="form-control" name="confirmPin" placeholder="Nhập lại mã PIN mới" required maxlength="6" minlength="6" />
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check me-2"></i>Cập nhật mã PIN
+                            </button>
+                            
+                            <a href="@Url.Action("Profile", "Customer")" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Quay lại hồ sơ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

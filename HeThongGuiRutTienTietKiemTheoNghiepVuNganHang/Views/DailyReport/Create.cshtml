@@ -1,0 +1,89 @@
+@{
+    ViewData["Title"] = "Tạo báo cáo giao dịch ngày";
+    Layout = "_LayoutTransaction";
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Transaction")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("Customers","Transaction")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("Deposit","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Nạp tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("Withdraw","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Rút tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("OpenSavingsBook","Transaction")"><i class="fas fa-book me-2"></i>Mở sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("Create","DailyReport")" class="active"><i class="fas fa-file-alt me-2"></i>Tạo báo cáo</a></li>
+            <li class="category-item"><a href="@Url.Action("Index","DailyReport")"><i class="fas fa-list me-2"></i>Danh sách báo cáo</a></li>
+            <li class="category-item"><a href="@Url.Action("CreateNotificationPage","Transaction")"><i class="fas fa-bell me-2"></i>Tạo thông báo</a></li>
+            <li class="category-item"><a href="@Url.Action("IncidentReportPage","Transaction")"><i class="fas fa-exclamation-triangle me-2"></i>Báo cáo sự cố</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        @if (TempData["ActionMessage"] != null)
+        {
+            <div class="alert alert-success mb-3" role="alert">
+                <i class="fas fa-check-circle me-2"></i> @TempData["ActionMessage"]
+            </div>
+        }
+
+        <div class="mb-4">
+            <h2 class="section-title mb-2"><i class="fas fa-file-alt me-2"></i>Tạo báo cáo giao dịch ngày</h2>
+            <p class="text-muted">Tạo báo cáo giao dịch theo ngày để gửi cho quản lý kiểm tra và tính KPI.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Thông tin báo cáo</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Ngày báo cáo</label>
+                                <input type="date" name="reportDate" class="form-control" value="@ViewBag.ReportDate.ToString("yyyy-MM-dd")" max="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                                <div class="form-text">Chọn ngày cần tạo báo cáo</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Loại báo cáo</label>
+                                <select name="reportType" class="form-control" required>
+                                    <option value="">-- Chọn loại báo cáo --</option>
+                                    <option value="BaoCaoSoTien">Báo cáo số tiền thu chi</option>
+                                    <option value="BaoCaoSoLuongGD">Báo cáo số lượng giao dịch</option>
+                                </select>
+                                <div class="form-text">Chọn loại báo cáo bạn muốn tạo</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="form-label">Ghi chú</label>
+                                <textarea name="notes" class="form-control" rows="3" placeholder="Nhập ghi chú (nếu có)..."></textarea>
+                                <div class="form-text">Thêm ghi chú bổ sung cho báo cáo (tùy chọn)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Hướng dẫn:</h6>
+                                <ul class="mb-0">
+                                    <li><strong>Báo cáo số tiền thu chi:</strong> Báo cáo tổng số tiền thu và chi trong ngày để quản lý kiểm tra tính chính xác.</li>
+                                    <li><strong>Báo cáo số lượng giao dịch:</strong> Báo cáo số lượng giao dịch đã thực hiện trong ngày để tính KPI.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Gửi báo cáo</button>
+                            <a href="@Url.Action("Index", "DailyReport")" class="btn btn-secondary"><i class="fas fa-list me-2"></i>Xem danh sách báo cáo</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>

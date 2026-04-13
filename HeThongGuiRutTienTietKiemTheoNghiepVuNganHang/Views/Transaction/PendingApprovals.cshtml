@@ -1,0 +1,211 @@
+@{
+    ViewData["Title"] = "Giao dịch chờ duyệt";
+    Layout = "_LayoutTransaction";
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Transaction")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Overview" ? "active" : "")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("Customers","Transaction")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Customers" ? "active" : "")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("Deposit","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Nạp tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("Withdraw","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Rút tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("OpenSavingsBook","Transaction")"><i class="fas fa-book me-2"></i>Mở sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("Create","DailyReport")"><i class="fas fa-file-alt me-2"></i>Tạo báo cáo</a></li>
+            <li class="category-item"><a href="@Url.Action("CreateNotificationPage","Transaction")"><i class="fas fa-bell me-2"></i>Tạo thông báo</a></li>
+            <li class="category-item"><a href="@Url.Action("IncidentReportPage","Transaction")"><i class="fas fa-exclamation-triangle me-2"></i>Báo cáo sự cố</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        <div class="mb-4">
+            <h2 class="section-title mb-2"><i class="fas fa-clock me-2"></i>Giao dịch chờ duyệt</h2>
+            <p class="text-muted">Danh sách các giao dịch đang chờ phê duyệt.</p>
+        </div>
+
+        <!-- Bộ lọc giao dịch chờ duyệt -->
+        <div class="card mb-4">
+            <div class="card-body p-3 bg-light border-bottom">
+                <form method="get" class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter me-1"></i>Bộ lọc
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="customer">Khách hàng</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="type">Loại giao dịch</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="date">Ngày giao dịch</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="amount">Số tiền</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div id="filterInputContainer" class="d-flex align-items-center gap-2 flex-wrap">
+                            <!-- Các input lọc sẽ được hiển thị ở đây -->
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-filter me-1"></i>Lọc
+                        </button>
+                        <a href="@Url.Action("PendingApprovals", "Transaction")" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (ViewBag.PendingTransactions != null && ((List<HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.GiaoDichTietKiem>)ViewBag.PendingTransactions).Any())
+        {
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mã GD</th>
+                                    <th>Khách hàng</th>
+                                    <th>Loại GD</th>
+                                    <th>Số tiền</th>
+                                    <th>Ngày GD</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var transaction in ViewBag.PendingTransactions as List<HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.GiaoDichTietKiem>)
+                                {
+                                    <tr>
+                                        <td>@transaction.MaGD</td>
+                                        <td>@transaction.SoTietKiem?.TaiKhoanNganHang?.KhachHang?.HoTen</td>
+                                        <td>
+                                            @if (transaction.LoaiGD == "Gửi")
+                                            {
+                                                <span class="badge bg-success">Gửi tiền</span>
+                                            }
+                                            else if (transaction.LoaiGD == "Rút")
+                                            {
+                                                <span class="badge bg-warning">Rút tiền</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-info">@transaction.LoaiGD</span>
+                                            }
+                                        </td>
+                                        <td>@string.Format("{0:N0}", transaction.SoTien) đ</td>
+                                        <td>@transaction.NgayGD.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td><span class="badge bg-secondary">Chờ duyệt</span></td>
+                                        <td>
+                                            <form asp-action="ApproveTransaction" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="maGD" value="@transaction.MaGD" />
+                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Bạn có chắc chắn muốn duyệt giao dịch này?')"><i class="fas fa-check"></i> Duyệt</button>
+                                            </form>
+                                            <form asp-action="RejectTransaction" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="maGD" value="@transaction.MaGD" />
+                                                <button type="submit" class="btn btn-danger btn-sm ms-1" onclick="return confirm('Bạn có chắc chắn muốn từ chối giao dịch này?')"><i class="fas fa-times"></i> Từ chối</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> Không có giao dịch chờ duyệt.
+            </div>
+        }
+    </section>
+</div>
+
+<script>
+    $(document).ready(function() {
+        let currentFilter = '';
+            
+        $('.filter-option').on('click', function(e) {
+            e.preventDefault();
+            const filterType = $(this).data('filter');
+            currentFilter = filterType;
+                
+            $('#filterInputContainer').empty();
+                
+            switch(filterType) {
+                case 'customer':
+                    $('#filterInputContainer').append(`
+                        <input type="text" name="customerName" class="form-control form-control-sm" placeholder="Tên khách hàng" value="@ViewBag.CustomerName">
+                    `);
+                    break;
+                case 'type':
+                    $('#filterInputContainer').append(`
+                        <select name="transactionType" class="form-select form-select-sm">
+                            <option value="">Tất cả loại</option>
+                            <option value="Gửi" @(ViewBag.TransactionType == "Gửi" ? "selected" : "")>Gửi</option>
+                            <option value="Rút" @(ViewBag.TransactionType == "Rút" ? "selected" : "")>Rút</option>
+                        </select>
+                    `);
+                    break;
+                case 'date':
+                    $('#filterInputContainer').append(`
+                        <input type="date" name="fromDate" class="form-control form-control-sm" placeholder="Từ ngày" value="@ViewBag.FromDate">
+                        <input type="date" name="toDate" class="form-control form-control-sm" placeholder="Đến ngày" value="@ViewBag.ToDate">
+                    `);
+                    break;
+                case 'amount':
+                    $('#filterInputContainer').append(`
+                        <input type="number" name="minAmount" class="form-control form-control-sm" placeholder="Số tiền tối thiểu" value="@ViewBag.MinAmount">
+                        <input type="number" name="maxAmount" class="form-control form-control-sm" placeholder="Số tiền tối đa" value="@ViewBag.MaxAmount">
+                    `);
+                    break;
+            }
+        });
+            
+        // Khởi tạo bộ lọc nếu có giá trị
+        @if (!string.IsNullOrEmpty(ViewBag.CustomerName?.ToString()) || 
+             !string.IsNullOrEmpty(ViewBag.TransactionType?.ToString()) || 
+             !string.IsNullOrEmpty(ViewBag.FromDate?.ToString()) || 
+             !string.IsNullOrEmpty(ViewBag.ToDate?.ToString()) || 
+             ViewBag.MinAmount != null || 
+             ViewBag.MaxAmount != null)
+        {
+            <text>
+            // Tự động mở dropdown và chọn bộ lọc phù hợp
+            $(document).ready(function() {
+                // Logic để tự động chọn bộ lọc dựa trên ViewBag
+                @if (!string.IsNullOrEmpty(ViewBag.CustomerName?.ToString()))
+                {
+                    <text>
+                    $('.filter-option[data-filter="customer"]').trigger('click');
+                    </text>
+                }
+                else if (!string.IsNullOrEmpty(ViewBag.TransactionType?.ToString()))
+                {
+                    <text>
+                    $('.filter-option[data-filter="type"]').trigger('click');
+                    </text>
+                }
+                else if (!string.IsNullOrEmpty(ViewBag.FromDate?.ToString()) || !string.IsNullOrEmpty(ViewBag.ToDate?.ToString()))
+                {
+                    <text>
+                    $('.filter-option[data-filter="date"]').trigger('click');
+                    </text>
+                }
+                else if (ViewBag.MinAmount != null || ViewBag.MaxAmount != null)
+                {
+                    <text>
+                    $('.filter-option[data-filter="amount"]').trigger('click');
+                    </text>
+                }
+            });
+            </text>
+        }
+    });
+</script>

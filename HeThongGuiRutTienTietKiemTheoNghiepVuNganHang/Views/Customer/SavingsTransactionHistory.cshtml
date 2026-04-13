@@ -1,0 +1,137 @@
+@{
+    ViewData["Title"] = "Lịch sử giao dịch sổ tiết kiệm";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="fas fa-receipt me-2"></i>@ViewData["Title"]</h2>
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="fas fa-university me-2"></i>Tài khoản ngân hàng của bạn</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Số tài khoản</th>
+                                    <th>Số dư</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày mở</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var bankAccounts = ViewBag.BankAccounts as IEnumerable<HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.TaiKhoanNganHang>;
+                                }
+                                @foreach (var account in bankAccounts)
+                                {
+                                    <tr>
+                                        <td><strong>@account.SoTaiKhoan</strong></td>
+                                        <td><span class="badge bg-primary">@string.Format("{0:N0}", account.SoDu) đ</span></td>
+                                        <td><span class="badge bg-@(account.TrangThai == "Hoạt động" ? "success" : "secondary")">@account.TrangThai</span></td>
+                                        <td>@account.NgayMoTaiKhoan.ToString("dd/MM/yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="fas fa-history me-2"></i>Lịch sử giao dịch sổ tiết kiệm</h5>
+                    @if (ViewBag.SavingsTransactions != null)
+                    {
+                        var transactions = ViewBag.SavingsTransactions as IEnumerable<HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.GiaoDichTietKiem>;
+                        if (transactions.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã giao dịch</th>
+                                            <th>Mã sổ tiết kiệm</th>
+                                            <th>Loại giao dịch</th>
+                                            <th>Số tiền</th>
+                                            <th>Ngày giao dịch</th>
+                                            <th>Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var transaction in transactions)
+                                        {
+                                            <tr>
+                                                <td><strong>#@transaction.MaGD</strong></td>
+                                                <td>@transaction.MaSTK</td>
+                                                <td>
+                                                    <span class="badge bg-@(transaction.LoaiGD == "Gửi" ? "success" : "warning")">
+                                                        @transaction.LoaiGD
+                                                    </span>
+                                                </td>
+                                                <td><strong>@string.Format("{0:N0}", transaction.SoTien) đ</strong></td>
+                                                <td>@transaction.NgayGD.ToString("dd/MM/yyyy HH:mm")</td>
+                                                <td><span class="badge bg-@(transaction.TrangThaiGD == "DaDuyet" ? "success" : "secondary")">@transaction.TrangThaiGD</span></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>Không tìm thấy lịch sử giao dịch sổ tiết kiệm nào.
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="@Url.Action("Dashboard", "Customer")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại bảng điều khiển
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .table thead {
+            background: #f0f4ff;
+        }
+
+        .table thead th {
+            color: #1e3c72;
+            font-weight: 600;
+        }
+
+        .badge {
+            border-radius: 8px;
+            padding: 0.5em 0.75em;
+        }
+
+        .card {
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            border: none;
+        }
+
+        .card-title {
+            color: #1e3c72;
+            font-weight: 700;
+        }
+    </style>
+}

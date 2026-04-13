@@ -1,0 +1,353 @@
+@using HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models
+@{
+    ViewData["Title"] = "Mở sổ tiết kiệm";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+    var bankAccounts = ViewBag.BankAccounts as List<TaiKhoanNganHang>;
+    var packages = ViewBag.Packages as List<GoiTietKiem>;
+    var selectedPackageId = ViewBag.SelectedPackageId as int?;
+}
+
+<section class="save-page" style="position:relative;overflow:hidden;padding:30px 0;min-height:calc(100vh - 300px);background:linear-gradient(180deg,#f1f6ff 0%,#edf3ff 60%,#e8f0ff 100%);">
+    <div style="content:'';position:absolute;top:10%;left:-140px;width:280px;height:280px;border-radius:50%;filter:blur(50px);opacity:0.35;background:radial-gradient(circle at center,rgba(30,60,114,0.25),rgba(42,82,152,0.05));pointer-events:none"></div>
+    <div style="content:'';position:absolute;top:10%;right:-140px;width:280px;height:280px;border-radius:50%;filter:blur(50px);opacity:0.35;background:radial-gradient(circle at center,rgba(102,126,234,0.25),rgba(118,75,162,0.05));pointer-events:none"></div>
+    <div class="container mt-4 mb-5" style="position:relative;z-index:1;max-width:1000px;">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="save-hero text-center mb-4" style="background:linear-gradient(135deg,#e9f2ff,#dbeafe);border-radius:16px;padding:32px 24px;margin-bottom:24px;box-shadow:0 4px 20px rgba(30,60,114,0.08)">
+                <h2 class="save-hero-title" style="color:#1e3c72;font-weight:800;letter-spacing:0.2px;margin-bottom:8px">Mở Sổ Tiết Kiệm</h2>
+                <p class="save-hero-subtitle" style="color:#2a5298;opacity:0.9;margin:0">Lựa chọn gói phù hợp và bắt đầu tích lũy ngay hôm nay</p>
+            </div>
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (packages == null || !packages.Any())
+            {
+                <div class="alert alert-warning text-center">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Hiện tại không có gói tiết kiệm nào khả dụng.
+                </div>
+                <div class="text-center">
+                    <a asp-action="Dashboard" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại Dashboard
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <!-- Form nhập thông tin -->
+                    <div class="col-lg-7">
+                        <div class="card shadow">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Thông Tin Gửi Tiết Kiệm</h5>
+                                <small class="text-white-50">Điền thông tin dưới đây để mở sổ tiết kiệm</small>
+                            </div>
+                            <div class="card-body">
+                                <form asp-action="RequestOpenSavingsBook" method="post" id="openSavingsForm">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="maGoiTietKiem" id="selectedPackageId" value="@(selectedPackageId ?? 0)" />
+
+                                    <!-- Chọn tài khoản thanh toán -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-university me-2"></i>Tài khoản thanh toán
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        @if (bankAccounts == null || !bankAccounts.Any())
+                                        {
+                                            <div class="alert alert-warning py-2">
+                                                <small>Bạn chưa có tài khoản ngân hàng nào.</small>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <select class="form-select" name="soTaiKhoan" id="accountSelect" required>
+                                                <option value="">-- Chọn tài khoản --</option>
+                                                @foreach (var account in bankAccounts)
+                                                {
+                                                    <option value="@account.SoTaiKhoan" data-balance="@account.SoDu">
+                                                        @account.SoTaiKhoan - Số dư: @string.Format("{0:N0}", account.SoDu) đ
+                                                    </option>
+                                                }
+                                            </select>
+                                            <div class="form-text small">Chọn tài khoản để trừ tiền gửi tiết kiệm</div>
+                                        }
+                                    </div>
+
+                                    <!-- Chọn gói mở sổ -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Chọn gói mở sổ</label>
+                                        <div class="d-flex flex-wrap gap-2" id="packagePills">
+                                            @foreach (var pkg in packages)
+                                            {
+                                                <button type="button" class="package-pill btn btn-outline-success"
+                                                        data-package-id="@pkg.MaGoiTietKiem" data-term="@pkg.KyHanThang" data-rate="@pkg.LaiSuat.ToString("F2")" data-min-amount="@pkg.SoTienToiThieu" data-package-name="@pkg.TenGoi">
+                                                    <div class="small text-muted">Kỳ hạn</div>
+                                                    <div class="fw-bold fs-6">@pkg.KyHanThang tháng</div>
+                                                    <div class="small">@pkg.LaiSuat.ToString("F2")%/năm</div>
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- Chọn loại tái tục -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-redo me-2"></i>Loại tái tục
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select" name="loaiTaiTuc" id="renewalTypeSelect" required>
+                                            <option value="">-- Chọn loại tái tục --</option>
+                                            <option value="Gốc">Gốc</option>
+                                            <option value="Gốc + lãi">Gốc + lãi</option>
+                                            <option value="Không tái tục">Không tái tục</option>
+                                        </select>
+                                        <div class="form-text small">Chọn cách tái tục khi đến hạn</div>
+                                    </div>
+
+                                    <!-- Nhập số tiền gửi -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-money-bill-wave me-2"></i>Số tiền gửi
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" class="form-control" name="soTienGui" id="amountInput" min="200000" step="100000" placeholder="Nhập số tiền" required />
+                                        <div class="form-text small"> Phải lớn hơn số tiền tối thiểu của gói, phải là bội số của 100,000 đ</div>
+                                        <div id="amountError" class="text-danger small mt-1" style="display:none;"></div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success w-100 btn-save" id="submitBtn" disabled>
+                                        <i class="fas fa-check-circle me-2"></i>Xác nhận mở sổ tiết kiệm
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kết quả dự kiến -->
+                    <div class="col-lg-5">
+                        <div class="vstack gap-3 sticky-top" style="top: 80px;">
+                            <div class="card shadow border-0 summary-card">
+                                <div class="card-body">
+                                    <div class="text-white-50 small">Tổng tiền dự kiến nhận</div>
+                                    <div class="display-6 fw-bold text-white" id="sumTotal">0 đ</div>
+                                    <div class="text-white-50" id="summaryTermLabel">Sau - tháng</div>
+                                    <hr class="border-light" />
+                                    <div class="d-flex justify-content-between text-white-50">
+                                        <span>Gốc:</span>
+                                        <span id="sumPrincipal">0 đ</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between text-white-50">
+                                        <span>Lãi:</span>
+                                        <span id="sumInterest">0 đ</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card shadow">
+                                <div class="card-body">
+                                    <div class="text-muted">Hạn ngày được nhận tiền</div>
+                                    <div class="fw-bold fs-5" id="summaryMaturity">-</div>
+                                </div>
+                            </div>
+
+                            <div class="card shadow">
+                                <div class="card-body">
+                                    <div class="text-muted">Gói tiết kiệm</div>
+                                    <div class="fw-bold" id="summaryPackageName">-</div>
+                                    <div class="small">Lãi suất: <span id="summaryRate">-</span>%/năm</div>
+                                </div>
+                            </div>
+
+                            <div class="card shadow">
+                                <div class="card-body">
+                                    <div class="text-muted">Lãi hàng tháng</div>
+                                    <div class="fw-bold" id="summaryMonthly">0 đ</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    </div>
+</section>
+
+@section Styles {
+<style>
+    body { background: linear-gradient(180deg, #f1f6ff 0%, #edf3ff 60%, #e8f0ff 100%) !important; }
+    .save-page { position: relative; overflow: hidden; padding: 30px 0; }
+    .save-hero { background: linear-gradient(135deg, #e9f2ff, #dbeafe); border-radius: 16px; padding: 32px 24px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(30,60,114,0.08); }
+    .save-hero-title { color: #1e3c72; font-weight: 800; letter-spacing: 0.2px; margin-bottom: 8px; }
+    .save-hero-subtitle { color: #2a5298; opacity: 0.9; margin: 0; }
+    .package-pill { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 16px; border-radius: 10px; border: 2px solid #0d6efd; min-width: 120px; background: #fff; color: #0d6efd; transition: .2s; }
+    .package-pill.active { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; box-shadow: 0 4px 15px rgba(13,110,253,.25); }
+    .summary-card { background: linear-gradient(135deg, #1e3c72, #2a5298); border-radius: 12px; }
+    .sticky-top { position: sticky; }
+    .card-header.bg-success { background: #1e3c72 !important; }
+</style>
+}
+
+@section Scripts {
+<script>
+        let selectedPackage = null;
+        // Truyền biến từ server sang client
+        const selectedPackageId = @Json.Serialize(ViewBag.SelectedPackageId as int? ?? 0);
+
+        $(document).ready(function () {
+            console.log("Document ready. Selected package ID from server:", selectedPackageId);
+            
+            // Chọn gói (pills)
+            $('.package-pill').click(function () {
+                $('.package-pill').removeClass('active');
+                $(this).addClass('active');
+                
+                // Chuẩn hóa giá trị số có dấu phẩy
+                const rateData = $(this).data('rate').toString().replace(',', '.');
+                const minAmountData = $(this).data('min-amount').toString().replace(',', '.');
+                
+                selectedPackage = {
+                    id: parseInt($(this).data('package-id')),
+                    name: $(this).data('package-name'),
+                    term: parseInt($(this).data('term')),
+                    rate: parseFloat(rateData),
+                    minAmount: parseFloat(minAmountData)
+                };
+                
+                console.log("Package selected:", selectedPackage);
+
+                $('#selectedPackageId').val(selectedPackage.id);
+                updateSummary();
+                validateForm();
+            });
+
+            // Chọn tài khoản
+            $('#accountSelect').change(function () {
+                console.log("Account selected");
+                updateSummary();
+                validateForm();
+            });
+
+            // Chọn loại tái tục
+            $('#renewalTypeSelect').change(function () {
+                console.log("Renewal type selected");
+                validateForm();
+            });
+
+            // Nhập số tiền
+            $('#amountInput').on('input', function () {
+                console.log("Amount input changed:", $(this).val());
+                validateAmount();
+                updateSummary();
+                validateForm();
+            });
+
+            // Submit form
+            $('#openSavingsForm').submit(function (e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                }
+            });
+
+            // Nếu có gói được chọn từ trước (qua URL)
+            if (selectedPackageId && selectedPackageId > 0) {
+                console.log("Auto-selecting package with ID:", selectedPackageId);
+                const pill = $(`.package-pill[data-package-id="${selectedPackageId}"]`);
+                if (pill.length > 0) {
+                    pill.click();
+                }
+            }
+            
+            // Cập nhật thông tin ban đầu
+            console.log("Initial updateSummary call");
+            updateSummary();
+            validateForm();
+        });
+
+        function validateAmount() {
+            const amount = parseFloat($('#amountInput').val()) || 0;
+            const errorDiv = $('#amountError');
+            
+            if (amount < 200000) {
+                errorDiv.text('Số tiền phải lớn hơn hoặc bằng 200,000 VNĐ').show();
+                return false;
+            }
+            
+            if (amount % 100000 !== 0) {
+                errorDiv.text('Số tiền phải là bội số của 100,000 VNĐ').show();
+                return false;
+            }
+            
+            if (selectedPackage && amount < selectedPackage.minAmount) {
+                errorDiv.text(`Số tiền phải lớn hơn hoặc bằng ${Math.round(selectedPackage.minAmount).toLocaleString()} VNĐ cho gói này`).show();
+                return false;
+            }
+            
+            errorDiv.hide();
+            return true;
+        }
+
+        function validateForm() {
+            const accountSelected = $('#accountSelect').val() !== '';
+            const packageSelected = selectedPackage !== null;
+            const renewalTypeSelected = $('#renewalTypeSelect').val() !== '';
+            const amountValid = validateAmount();
+            
+            const isValid = accountSelected && packageSelected && renewalTypeSelected && amountValid;
+            $('#submitBtn').prop('disabled', !isValid);
+            
+            console.log("Form validation - Account:", accountSelected, "Package:", packageSelected, "Renewal Type:", renewalTypeSelected, "Amount valid:", amountValid, "Overall:", isValid);
+            
+            return isValid;
+        }
+
+        function updateSummary() {
+            const amount = parseFloat($('#amountInput').val()) || 0;
+            const term = selectedPackage ? selectedPackage.term : 0;
+            const rate = selectedPackage ? selectedPackage.rate : 0;
+            
+            console.log("Updating summary - Amount:", amount, "Term:", term, "Rate:", rate);
+            
+            // Cập nhật thông tin gói
+            $('#summaryPackageName').text(selectedPackage ? selectedPackage.name : '-');
+            $('#summaryRate').text(selectedPackage ? selectedPackage.rate.toFixed(2).replace('.', ',') : '-');
+            
+            if (amount > 0 && term > 0 && rate > 0) {
+                // Tính lãi suất (giả định tính theo năm)
+                const interest = amount * rate * term / 1200; // (số tiền * lãi suất * số tháng) / 1200
+                const total = amount + interest;
+                const monthlyInterest = interest / term;
+                
+                // Ngày đáo hạn (giả định từ hôm nay)
+                const maturityDate = new Date();
+                maturityDate.setMonth(maturityDate.getMonth() + term);
+                
+                $('#sumPrincipal').text(amount.toLocaleString('vi-VN') + ' đ');
+                $('#sumInterest').text(interest.toLocaleString('vi-VN', {maximumFractionDigits: 0}) + ' đ');
+                $('#sumTotal').text(total.toLocaleString('vi-VN', {maximumFractionDigits: 0}) + ' đ');
+                $('#summaryMonthly').text(monthlyInterest.toLocaleString('vi-VN', {maximumFractionDigits: 0}) + ' đ');
+                $('#summaryTermLabel').text(`Sau ${term} tháng`);
+                $('#summaryMaturity').text(maturityDate.toLocaleDateString('vi-VN'));
+                
+                console.log("Summary updated with values - Principal:", amount, "Interest:", interest, "Total:", total);
+            } else {
+                $('#sumPrincipal').text('0 đ');
+                $('#sumInterest').text('0 đ');
+                $('#sumTotal').text('0 đ');
+                $('#summaryMonthly').text('0 đ');
+                $('#summaryTermLabel').text('Sau - tháng');
+                $('#summaryMaturity').text('-');
+                
+                console.log("Summary reset to default values");
+            }
+        }
+</script>
+}

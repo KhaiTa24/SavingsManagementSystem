@@ -1,0 +1,163 @@
+@{
+    ViewData["Title"] = "Chi tiết sổ tiết kiệm";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<!-- Hero -->
+<section class="hero" style="background: linear-gradient(135deg, #2a5298 0%, #74a7db 100%); color: #fff; padding: 1.5rem 0; margin-bottom: 2rem;">
+    <div class="container">
+        <div class="text-center">
+            <h2 style="font-weight: 800; margin-bottom: 0.25rem; font-size: 1.8rem;"><i class="fas fa-book-open me-2"></i>Chi tiết sổ tiết kiệm</h2>
+            <p style="opacity: 0.95; margin-bottom: 0;">Thông tin chi tiết về sổ tiết kiệm của bạn</p>
+        </div>
+    </div>
+</section>
+
+<div class="container my-4" style="max-width: 1200px;">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Thông tin sổ tiết kiệm -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Thông tin sổ tiết kiệm #@ViewBag.SavingsBook.MaSTK</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Tài khoản ngân hàng:</strong> @ViewBag.SavingsBook.TaiKhoanNganHang.SoTaiKhoan</p>
+                    <p><strong>Số tiền gửi ban đầu:</strong> @string.Format("{0:N0}", ViewBag.SavingsBook.SoTienGui) đ</p>
+                    <p><strong>Kỳ hạn:</strong> @ViewBag.SavingsBook.KyHan tháng</p>
+                    <p><strong>Lãi suất:</strong> @ViewBag.SavingsBook.LaiSuat% mỗi năm</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Ngày mở sổ:</strong> @ViewBag.SavingsBook.NgayMoSo.ToString("dd/MM/yyyy")</p>
+                    <p><strong>Ngày đáo hạn:</strong> @ViewBag.SavingsBook.NgayDaoHan.ToString("dd/MM/yyyy")</p>
+                    <p><strong>Số tiền hiện tại:</strong> <span class="text-success">@string.Format("{0:N0}", ViewBag.CurrentAmount) đ</span></p>
+                    <p><strong>Trạng thái:</strong> <span class="badge bg-success">@ViewBag.SavingsBook.TrangThai</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nút đáo hạn -->
+    @if (ViewBag.SavingsBook.TrangThai == "Đang hoạt động")
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Đáo hạn sổ tiết kiệm</h5>
+            </div>
+            <div class="card-body">
+                @{
+                    bool isMatured = DateTime.Now >= ViewBag.SavingsBook.NgayDaoHan;
+                }
+                
+                @if (isMatured)
+                {
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>Sổ tiết kiệm đã đến ngày đáo hạn. Bạn có thể thực hiện đáo hạn để nhận tiền gốc và lãi.
+                    </div>
+                    <form asp-action="CloseSavingsBook" method="post" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@ViewBag.SavingsBook.MaSTK" />
+                        <button type="submit" class="btn btn-success" onclick="return confirm('Bạn có chắc muốn đáo hạn sổ tiết kiệm này? Số tiền gốc và lãi sẽ được chuyển về tài khoản ngân hàng của bạn.')">
+                            <i class="fas fa-check-circle me-2"></i>Đáo hạn
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Sổ tiết kiệm chưa đến ngày đáo hạn (@ViewBag.SavingsBook.NgayDaoHan.ToString("dd/MM/yyyy")).
+                    </div>
+                    <form asp-action="CloseSavingsBook" method="post" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@ViewBag.SavingsBook.MaSTK" />
+                        <input type="hidden" name="earlyWithdrawal" value="true" />
+                        <button type="submit" class="btn btn-warning" onclick="return confirm('Bạn có chắc muốn tất toán trước hạn? Bạn sẽ KHÔNG nhận được tiền lãi. Xác nhận giao dịch.')">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Tất toán trước hạn
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Lịch sử giao dịch -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Lịch sử giao dịch</h5>
+        </div>
+        <div class="card-body">
+            @{
+                var transactions = ViewBag.SavingsBook.GiaoDichTietKiems as ICollection<HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.GiaoDichTietKiem>;
+                var orderedTransactions = transactions?.OrderBy(t => t.NgayGD).ToList();
+            }
+            
+            @if (orderedTransactions != null && orderedTransactions.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Mã giao dịch</th>
+                                <th>Loại giao dịch</th>
+                                <th>Số tiền</th>
+                                <th>Ngày giao dịch</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var transaction in orderedTransactions)
+                            {
+                                <tr>
+                                    <td>#@transaction.MaGD</td>
+                                    <td>@transaction.LoaiGD</td>
+                                    <td>@string.Format("{0:N0}", transaction.SoTien) đ</td>
+                                    <td>@transaction.NgayGD.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @if (transaction.TrangThaiGD == "DaDuyet")
+                                        {
+                                            <span class="badge bg-success">Đã duyệt</span>
+                                        }
+                                        else if (transaction.TrangThaiGD == "ChoDuyet")
+                                        {
+                                            <span class="badge bg-warning">Chờ duyệt</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Từ chối</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>Chưa có giao dịch nào.
+                </div>
+            }
+        </div>
+    </div>
+
+    <a href="@Url.Action("Profile", "Customer")" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Quay lại hồ sơ
+    </a>
+</div>

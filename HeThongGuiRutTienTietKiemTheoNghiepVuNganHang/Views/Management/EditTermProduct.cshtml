@@ -1,0 +1,87 @@
+@model HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.GoiTietKiem
+@{
+    ViewData["Title"] = "Chỉnh sửa gói tiết kiệm";
+    Layout = "_LayoutManagement";
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Management")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("TransactionApproval","Management")"><i class="fas fa-check-circle me-2"></i>Duyệt giao dịch</a></li>
+            <li class="category-item"><a href="@Url.Action("SavingsBookManagement","Management")"><i class="fas fa-book me-2"></i>Quản lý sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("TermDepositProducts","Management")"><i class="fas fa-box me-2"></i>Gói tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("TellerManagement","Management")"><i class="fas fa-users-cog me-2"></i>Quản lý nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("CustomerManagement","Management")" class="active"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("DailyReports","Management")"><i class="fas fa-file-alt me-2"></i>Báo cáo nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageAppointments","Management")"><i class="fas fa-calendar-alt me-2"></i>Quản lý lịch hẹn</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-edit me-2"></i>Chỉnh sửa gói tiết kiệm</div>
+            <div class="card-body">
+                <form asp-controller="Management" asp-action="EditTermProduct" method="post" class="row g-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="MaGoiTietKiem" />
+                    <div class="col-md-6">
+                        <label class="form-label">Tên gói</label>
+                        <input class="form-control" asp-for="TenGoi" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Kỳ hạn (tháng)</label>
+                        <input class="form-control" asp-for="KyHanThang" type="number" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Lãi suất (%)</label>
+                        <input class="form-control" asp-for="LaiSuat" type="number" step="0.01" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Số tiền tối thiểu</label>
+                        <input class="form-control" asp-for="SoTienToiThieu" type="number" step="0.01" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Hình thức trả lãi</label>
+                        <select class="form-select" asp-for="HinhThucTraLai">
+                            <option>Cuối kỳ</option>
+                            <option>Hàng tháng</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tái tục tự động</label>
+                        <div class="form-check">
+                            <input class="form-check-input" asp-for="TaiTucTuDong" type="checkbox" />
+                            <label class="form-check-label">Bật nếu tự tái tục</label>
+                        </div>
+                    </div>
+                    @* Loại tái tục sẽ được chọn bởi khách hàng khi mở sổ tiết kiệm *@
+                    @*<div class="col-md-6">
+                        <label class="form-label">Loại tái tục</label>
+                        <select class="form-select" asp-for="LoaiTaiTuc">
+                            <option>Gốc</option>
+                            <option>Gốc + lãi</option>
+                            <option>Không tái tục</option>
+                        </select>
+                    </div>*@
+                    <div class="col-md-6">
+                        <label class="form-label">Cho phép rút trước hạn</label>
+                        <div class="form-check">
+                            <input class="form-check-input" asp-for="ChoPhepRutTruocHan" type="checkbox" />
+                            <label class="form-check-label">Cho phép (không có lãi)</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Mô tả</label>
+                        <textarea class="form-control" asp-for="MoTa" rows="4"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary" type="submit"><i class="fas fa-save me-2"></i>Lưu</button>
+                        <a class="btn btn-secondary" asp-controller="Management" asp-action="TermDepositProducts">Quay lại</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>

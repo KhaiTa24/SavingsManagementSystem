@@ -1,0 +1,110 @@
+@using HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models
+@{
+    ViewData["Title"] = "Quản lý gói tiết kiệm";
+    Layout = "_LayoutManagement";
+    var products = ViewBag.Products as List<GoiTietKiem>;
+    var q = ViewBag.Query as string;
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Management")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("TransactionApproval","Management")"><i class="fas fa-check-circle me-2"></i>Duyệt giao dịch</a></li>
+            <li class="category-item"><a href="@Url.Action("SavingsBookManagement","Management")"><i class="fas fa-book me-2"></i>Quản lý sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("TermDepositProducts","Management")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "TermDepositProducts" ? "active" : "")"><i class="fas fa-box me-2"></i>Gói tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("TellerManagement","Management")"><i class="fas fa-users-cog me-2"></i>Quản lý nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("CustomerManagement","Management")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("DailyReports","Management")"><i class="fas fa-file-alt me-2"></i>Báo cáo nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageAppointments","Management")"><i class="fas fa-calendar-alt me-2"></i>Quản lý lịch hẹn</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        @if (TempData["ActionMessage"] != null)
+        {
+            <div class="alert alert-success mb-3" role="alert">
+                <i class="fas fa-check-circle me-2"></i> @TempData["ActionMessage"]
+            </div>
+        }
+
+        <div class="card mb-3">
+            <div class="card-header"><i class="fas fa-search me-2"></i>Tìm kiếm gói</div>
+            <div class="card-body">
+                <form method="get" asp-controller="Management" asp-action="TermDepositProducts" class="row g-2">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" name="q" value="@q" placeholder="Tên gói" />
+                    </div>
+                    <div class="col-md-3">
+                        <a class="btn btn-success w-100" asp-controller="Management" asp-action="CreateTermProduct"><i class="fas fa-plus me-2"></i>Tạo gói mới</a>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary w-100" type="submit"><i class="fas fa-search me-2"></i>Tìm kiếm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><i class="fas fa-box me-2"></i>Danh sách gói tiết kiệm</div>
+            <div class="card-body p-0">
+                @if (products != null && products.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Mã gói</th>
+                                    <th>Tên gói</th>
+                                    <th>Kỳ hạn (tháng)</th>
+                                    <th>Lãi suất (%)</th>
+                                    <th>Số tiền tối thiểu</th>
+                                    <th>Trả lãi</th>
+                                    <th>Tái tục</th>
+                                    <th>Cho rút trước hạn</th>
+                                    <th>Trạng thái</th>
+                                    <th style="width:280px">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var p in products)
+                                {
+                                    <tr>
+                                        <td><i class="fas fa-hashtag me-1 text-muted"></i>@p.MaGoiTietKiem</td>
+                                        <td>@p.TenGoi</td>
+                                        <td>@p.KyHanThang</td>
+                                        <td>@p.LaiSuat</td>
+                                        <td>@string.Format("{0:N0}", p.SoTienToiThieu) đ</td>
+                                        <td>@p.HinhThucTraLai</td>
+                                        <td>@(p.TaiTucTuDong ? "Tự tái tục" : "Không tự động")</td>
+                                        <td>@(p.ChoPhepRutTruocHan ? "Có" : "Không")</td>
+                                        <td><span class="badge bg-@(string.Equals(p.TrangThai, "Active", StringComparison.OrdinalIgnoreCase) ? "success" : "secondary")">@p.TrangThai</span></td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <a class="btn btn-info btn-sm" asp-controller="Management" asp-action="EditTermProduct" asp-route-id="@p.MaGoiTietKiem"><i class="fas fa-edit me-1"></i>Sửa</a>
+                                                <form asp-controller="Management" asp-action="ToggleProductStatus" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@p.MaGoiTietKiem" />
+                                                    <button class="btn btn-warning btn-sm" type="submit"><i class="fas fa-toggle-on me-1"></i> @(string.Equals(p.TrangThai, "Active", StringComparison.OrdinalIgnoreCase) ? "Tạm ngưng" : "Kích hoạt")</button>
+                                                </form>
+                                                <a class="btn btn-secondary btn-sm" asp-controller="Management" asp-action="ManagePromotions" asp-route-id="@p.MaGoiTietKiem"><i class="fas fa-gift me-1"></i>Khuyến mãi</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted p-4">
+                        <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                        Không có gói tiết kiệm.
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+</div>

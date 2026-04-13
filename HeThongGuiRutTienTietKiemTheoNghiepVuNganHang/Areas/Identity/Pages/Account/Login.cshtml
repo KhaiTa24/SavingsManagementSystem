@@ -1,0 +1,460 @@
+@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Đăng Nhập";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .login-left {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .login-left i {
+            font-size: 5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .login-left h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .login-left p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .login-right {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-header {
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            color: #6c757d;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-label i {
+            color: #667eea;
+            width: 20px;
+        }
+
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        }
+
+        .password-input-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s;
+        }
+
+        .password-toggle:hover {
+            color: #667eea;
+        }
+
+        .form-check {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+
+        .form-check-label {
+            color: #6c757d;
+            cursor: pointer;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+
+        .login-footer {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .login-footer a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .text-danger {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .validation-summary {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .validation-summary ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .validation-summary li {
+            color: #856404;
+        }
+
+        .warning-message {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            color: #856404;
+            font-weight: 500;
+        }
+
+        .warning-message.danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .warning-message i {
+            margin-right: 0.5rem;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #155724;
+            font-weight: 500;
+            position: relative;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        .alert-success i {
+            color: #28a745;
+            font-size: 1.2rem;
+        }
+
+        .btn-close {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .btn-close:hover {
+            opacity: 1;
+        }
+
+        @@keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .home-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .home-link:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        @@media (max-width: 768px) {
+            .login-container {
+                grid-template-columns: 1fr;
+            }
+            .login-left {
+                padding: 2rem;
+            }
+            .login-left i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+            .login-left h2 {
+                font-size: 1.5rem;
+            }
+            .login-right {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="home-link"><i class="fas fa-home me-2"></i>Trang Chủ</a>
+
+    <div class="login-container">
+        <div class="login-left">
+            <i class="fas fa-piggy-bank"></i>
+            <h2>Chào Mừng Trở Lại!</h2>
+            <p>Quản lý tiết kiệm thông minh, an toàn và tiện lợi cùng hệ thống ngân hàng hiện đại</p>
+        </div>
+
+        <div class="login-right">
+            <div class="login-header">
+                <h1>Đăng Nhập</h1>
+                <p>Nhập thông tin để tiếp tục</p>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <form id="account" method="post">
+                <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert" style="display:none;"></div>
+                
+                <!-- Display warning messages -->
+                @{
+                    var modelStateErrors = ViewData.ModelState.Where(x => x.Value.Errors.Count > 0).ToList();
+                    if (modelStateErrors.Any())
+                    {
+                        foreach (var error in modelStateErrors.SelectMany(x => x.Value.Errors))
+                        {
+                            var errorMessage = error.ErrorMessage;
+                            if (errorMessage.Contains("khóa"))
+                            {
+                                <div class="warning-message danger">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    @errorMessage
+                                </div>
+                            }
+                            else if (errorMessage.Contains("lần thử"))
+                            {
+                                <div class="warning-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    @errorMessage
+                                </div>
+                            }
+                        }
+                    }
+                }
+                
+                <div class="form-group">
+                    <label asp-for="Input.Email" class="form-label">
+                        <i class="fas fa-envelope"></i>
+                        <span>Email</span>
+                    </label>
+                    <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="email@example.com" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Input.Password" class="form-label">
+                        <i class="fas fa-lock"></i>
+                        <span>Mật Khẩu</span>
+                    </label>
+                    <div class="password-input-group">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="current-password" type="password" id="password" placeholder="Nhập mật khẩu" />
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            <i class="fas fa-eye" id="password-icon"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" asp-for="Input.RememberMe" id="rememberMe" />
+                    <label class="form-check-label" for="rememberMe">
+                        @Html.DisplayNameFor(m => m.Input.RememberMe)
+                    </label>
+                </div>
+
+                <button id="login-submit" type="submit" class="btn btn-login">
+                    <i class="fas fa-sign-in-alt me-2"></i>Đăng Nhập
+                </button>
+
+                <div class="login-footer">
+                    <div class="mb-2">
+                        <a id="forgot-password" asp-page="./ForgotPassword"><i class="fas fa-question-circle"></i> Quên mật khẩu?</a>
+                    </div>
+                    <div>
+                        Chưa có tài khoản? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Đăng ký ngay</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const icon = document.getElementById('password-icon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    // Auto dismiss alerts after 10s
+    document.addEventListener('DOMContentLoaded', function () {
+        var alertEl = document.querySelector('.alert.alert-success');
+        if (alertEl) {
+            setTimeout(function () {
+                try {
+                    var bsAlert = bootstrap.Alert.getOrCreateInstance(alertEl);
+                    bsAlert.close();
+                } catch (e) {
+                    alertEl.style.display = 'none';
+                }
+            }, 10000);
+        }
+    });
+    </script>
+</body>
+</html>

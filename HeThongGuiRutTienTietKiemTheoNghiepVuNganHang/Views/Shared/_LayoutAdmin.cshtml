@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fb; color: #2c3e50; min-height: 100vh; }
+
+        /* Navbar */
+        .navbar-custom { background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%); padding: 0.75rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .navbar-brand { color: #fff !important; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; }
+        .navbar-brand i { font-size: 1.6rem; }
+        .nav-link { color: rgba(255,255,255,0.9) !important; font-weight: 600; }
+        .avatar { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; margin-right: 8px; }
+
+        /* Alert */
+        .alert-success { background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border: 2px solid #28a745; border-radius: 12px; color: #155724; font-weight: 500; }
+
+        /* Sidebar & Content Layout */
+        .dashboard-container { display: flex; gap: 1.5rem; max-width: 1400px; margin: 0 auto; padding: 2rem 1rem; }
+        .sidebar { width: 260px; background: #fff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); padding: 1.5rem; height: fit-content; position: sticky; top: 1.5rem; }
+        .sidebar h3 { font-size: 1.1rem; font-weight: 800; color: #c0392b; margin-bottom: 1rem; }
+        .category-list { list-style: none; }
+        .category-item { margin-bottom: 0.5rem; }
+        .category-item a { display: block; padding: 0.75rem 1rem; color: #2c3e50; text-decoration: none; border-radius: 10px; transition: all 0.3s; font-weight: 500; }
+        .category-item a:hover { background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%); color: #fff; transform: translateX(4px); }
+        .category-item a.active { background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%); color: #fff; }
+
+        .content { flex: 1; }
+
+        /* Cards */
+        .card { border: none; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); margin-bottom: 1.5rem; }
+        .card-header { background: linear-gradient(135deg, #fdecea 0%, #fce4e4 100%); border-bottom: 2px solid #f5c6cb; border-radius: 16px 16px 0 0 !important; font-weight: 700; color: #c0392b; }
+        .stat-card { background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%); color: #fff; }
+        .stat-card .icon { font-size: 1.8rem; opacity: 0.9; }
+        .stat-number { font-size: 1.8rem; font-weight: 800; }
+        .stat-label { opacity: 0.9; }
+
+        /* Tables */
+        .table { margin-bottom: 0; }
+        .table thead { background: #fdecea; }
+        .table thead th { color: #c0392b; font-weight: 700; border: none; padding: 1rem; }
+        .table tbody td { padding: 0.9rem 1rem; vertical-align: middle; border-color: #fdecea; }
+        .table tbody tr:hover { background: #fef9f9; }
+        .badge { border-radius: 8px; padding: 0.4rem 0.8rem; font-weight: 600; }
+
+        /* Buttons */
+        .btn { border-radius: 8px; font-weight: 600; padding: 0.5rem 1rem; }
+        .btn-primary { background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%); border: none; }
+        .btn-primary:hover { background: linear-gradient(135deg, #a93226 0%, #cb4335 100%); }
+        .btn-success { background: linear-gradient(135deg, #28a745 0%, #218838 100%); border: none; }
+        .btn-success:hover { background: linear-gradient(135deg, #218838 0%, #1e7e34 100%); }
+        .btn-info { background: linear-gradient(135deg, #1c7ed6 0%, #1864ab 100%); border: none; }
+        .btn-info:hover { background: linear-gradient(135deg, #1769b1 0%, #145a8d 100%); }
+        .btn-warning { background: linear-gradient(135deg, #f59f00 0%, #e67e22 100%); border: none; }
+        .btn-warning:hover { background: linear-gradient(135deg, #d68500 0%, #cf6d17 100%); }
+        .btn-danger { background: linear-gradient(135deg, #e03131 0%, #c92a2a 100%); border: none; }
+        .btn-danger:hover { background: linear-gradient(135deg, #c92a2a 0%, #a61e1e 100%); }
+
+        /* Forms */
+        .form-control { border-radius: 10px; border: 2px solid #f5c6cb; padding: 0.65rem 1rem; }
+        .form-control:focus { border-color: #c0392b; box-shadow: 0 0 0 0.2rem rgba(192, 57, 43, 0.15); }
+        .form-label { font-weight: 600; color: #2c3e50; margin-bottom: 0.5rem; }
+
+        /* Section Title */
+        .section-title { font-size: 1.5rem; font-weight: 800; color: #c0392b; margin-bottom: 1.5rem; }
+
+        /* Footer */
+        footer { padding: 2rem 0; text-align: center; color: #6c757d; margin-top: 3rem; }
+
+        @@media (max-width: 992px) {
+            .dashboard-container { flex-direction: column; }
+            .sidebar { width: 100%; position: static; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" asp-controller="Admin" asp-action="Overview">
+                <i class="fas fa-user-cog"></i> BankSave - Administrator
+            </a>
+            <div class="ms-auto d-flex align-items-center">
+                <span class="avatar"><i class="fas fa-user-cog"></i></span>
+                <span class="text-white me-3">@(ViewBag.User?.HoTen ?? User.Identity?.Name ?? "Administrator")</span>
+                <form class="d-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/Identity/Account/Login" method="post">
+                                <button class="btn btn-outline-light btn-sm" type="submit"><i class="fas fa-sign-out-alt me-1"></i> Đăng xuất</button>
+                            </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        @RenderBody()
+    </div>
+
+    <footer>
+        © 2025 BankSave. An toàn - Hiện đại - Tin cậy.
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,101 @@
+@model IEnumerable<HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.BaoCaoGiaoDichNgay>
+@{
+    ViewData["Title"] = "Danh sách báo cáo";
+    Layout = "_LayoutTransaction";
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Transaction")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("Customers","Transaction")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("Deposit","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Nạp tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("Withdraw","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Rút tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("OpenSavingsBook","Transaction")"><i class="fas fa-book me-2"></i>Mở sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("Create","DailyReport")"><i class="fas fa-file-alt me-2"></i>Tạo báo cáo</a></li>
+            <li class="category-item"><a href="@Url.Action("Index","DailyReport")" class="active"><i class="fas fa-list me-2"></i>Danh sách báo cáo</a></li>
+            <li class="category-item"><a href="@Url.Action("CreateNotificationPage","Transaction")"><i class="fas fa-bell me-2"></i>Tạo thông báo</a></li>
+            <li class="category-item"><a href="@Url.Action("IncidentReportPage","Transaction")"><i class="fas fa-exclamation-triangle me-2"></i>Báo cáo sự cố</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        @if (TempData["ActionMessage"] != null)
+        {
+            <div class="alert alert-success mb-3" role="alert">
+                <i class="fas fa-check-circle me-2"></i> @TempData["ActionMessage"]
+            </div>
+        }
+
+        <div class="mb-4">
+            <h2 class="section-title mb-2"><i class="fas fa-list me-2"></i>Danh sách báo cáo</h2>
+            <p class="text-muted">Danh sách các báo cáo giao dịch ngày đã tạo.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Báo cáo đã tạo</h5>
+                <a href="@Url.Action("Create", "DailyReport")" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i> Tạo báo cáo mới</a>
+            </div>
+            <div class="card-body">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mã báo cáo</th>
+                                    <th>Ngày báo cáo</th>
+                                    <th>Loại báo cáo</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var report in Model)
+                                {
+                                    <tr>
+                                        <td>#@report.MaBaoCao</td>
+                                        <td>@report.NgayBaoCao.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            @if (report.LoaiBaoCao == "BaoCaoSoTien")
+                                            {
+                                                <span class="badge bg-primary">Báo cáo số tiền</span>
+                                            }
+                                            else if (report.LoaiBaoCao == "BaoCaoSoLuongGD")
+                                            {
+                                                <span class="badge bg-success">Báo cáo số lượng</span>
+                                            }
+                                        </td>
+                                        <td>@report.NgayLap.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>
+                                            <a href="@Url.Action("Details", "DailyReport", new { id = report.MaBaoCao })" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye me-1"></i> Xem
+                                            </a>
+                                            <a href="@Url.Action("Export", "DailyReport", new { id = report.MaBaoCao, format = "pdf" })" class="btn btn-secondary btn-sm">
+                                                <i class="fas fa-file-pdf me-1"></i> PDF
+                                            </a>
+                                            <a href="@Url.Action("Export", "DailyReport", new { id = report.MaBaoCao, format = "docx" })" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-file-word me-1"></i> Word
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                        <h5>Chưa có báo cáo nào</h5>
+                        <p class="text-muted">Bạn chưa tạo bất kỳ báo cáo nào. Hãy tạo báo cáo đầu tiên của bạn.</p>
+                        <a href="@Url.Action("Create", "DailyReport")" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Tạo báo cáo mới</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+</div>

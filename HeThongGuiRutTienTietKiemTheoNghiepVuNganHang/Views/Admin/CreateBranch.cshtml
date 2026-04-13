@@ -1,0 +1,78 @@
+@{
+    ViewData["Title"] = "Thêm chi nhánh";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Quản trị</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Admin")"><i class="fas fa-tachometer-alt me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("UserManagement","Admin")"><i class="fas fa-users-cog me-2"></i>Quản lý người dùng</a></li>
+            <li class="category-item"><a href="@Url.Action("LoginHistory","Admin")"><i class="fas fa-history me-2"></i>Lịch sử đăng nhập</a></li>
+            <li class="category-item"><a href="@Url.Action("ActiveSessions","Admin")"><i class="fas fa-user-clock me-2"></i>Session đang hoạt động</a></li>
+            <li class="category-item"><a href="@Url.Action("SuspiciousLogins","Admin")"><i class="fas fa-exclamation-triangle me-2"></i>Đăng nhập bất thường</a></li>
+            <li class="category-item"><a href="@Url.Action("RoleManagement","Admin")"><i class="fas fa-user-tag me-2"></i>Quản lý vai trò</a></li>
+            <li class="category-item"><a href="@Url.Action("SystemNotifications","Admin")"><i class="fas fa-bullhorn me-2"></i>Thông báo hệ thống</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageBranches","Admin")" class="active"><i class="fas fa-building me-2"></i>Quản lý chi nhánh</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageServices","Admin")"><i class="fas fa-concierge-bell me-2"></i>Quản lý loại dịch vụ</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h2 class="section-title"><i class="fas fa-plus-circle me-2"></i>Thêm chi nhánh mới</h2>
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Thông tin chi nhánh</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="CreateBranch" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Tên chi nhánh</label>
+                        <input name="tenChiNhanh" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        <input name="diaChi" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input name="soDienThoai" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Giờ làm việc</label>
+                        <input name="gioLamViec" class="form-control" placeholder="Ví dụ: 08:00 - 17:00" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Trạng thái hoạt động</label>
+                        <select name="trangThaiHD" class="form-select">
+                            <option value="HoatDong">Hoạt động</option>
+                            <option value="TamNgung">Tạm ngưng</option>
+                            <option value="DongCua">Đóng cửa</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="ManageBranches" class="btn btn-secondary me-md-2">Quay lại</a>
+                        <button type="submit" class="btn btn-primary">Thêm chi nhánh</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

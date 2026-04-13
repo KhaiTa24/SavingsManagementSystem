@@ -1,0 +1,91 @@
+@model HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.LichHen
+@{
+    ViewData["Title"] = "Xác nhận đặt lịch hẹn";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-check-circle me-2"></i>Xác nhận đặt lịch hẹn</h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">Thông tin lịch hẹn</h5>
+                        <hr>
+                        <dl class="row">
+                            <dt class="col-sm-4">Mã lịch hẹn:</dt>
+                            <dd class="col-sm-8"><strong>@Model.MaLichHen</strong></dd>
+
+                            <dt class="col-sm-4">Dịch vụ:</dt>
+                            <dd class="col-sm-8">@Model.LoaiDichVu.TenDV</dd>
+
+                            <dt class="col-sm-4">Chi nhánh:</dt>
+                            <dd class="col-sm-8">@Model.ChiNhanh.TenChiNhanh</dd>
+
+                            <dt class="col-sm-4">Địa chỉ:</dt>
+                            <dd class="col-sm-8">@Model.ChiNhanh.DiaChi</dd>
+
+                            <dt class="col-sm-4">Ngày giao dịch:</dt>
+                            <dd class="col-sm-8">@Model.NgayGiaoDich.ToString("dd/MM/yyyy")</dd>
+
+                            <dt class="col-sm-4">Khung giờ:</dt>
+                            <dd class="col-sm-8">@Model.KhungGio</dd>
+
+                            <dt class="col-sm-4">Trạng thái:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.TrangThai == "ChoDuyet")
+                                {
+                                    <span class="badge bg-warning">Chờ duyệt</span>
+                                }
+                                else if (Model.TrangThai == "DaDuyet")
+                                {
+                                    <span class="badge bg-success">Đã duyệt</span>
+                                }
+                                else if (Model.TrangThai == "DaHuy")
+                                {
+                                    <span class="badge bg-danger">Đã hủy</span>
+                                }
+                            </dd>
+
+                            @if (!string.IsNullOrEmpty(Model.GhiChuKH))
+                            {
+                                <dt class="col-sm-4">Ghi chú:</dt>
+                                <dd class="col-sm-8">@Model.GhiChuKH</dd>
+                            }
+                        </dl>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Lưu ý quan trọng</h5>
+                        <hr>
+                        <p>Vui lòng lưu lại mã lịch hẹn này để xuất trình tại quầy giao dịch khi bạn đến.</p>
+                        <p class="mb-0">Hệ thống sẽ gửi thông báo đến bạn khi lịch hẹn được duyệt hoặc có thay đổi.</p>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Dashboard" class="btn btn-primary">Quay về trang chủ</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

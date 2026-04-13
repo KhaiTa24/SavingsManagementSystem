@@ -1,0 +1,124 @@
+@model IEnumerable<HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.LichHen>
+@{
+    ViewData["Title"] = "Quản lý lịch hẹn";
+    Layout = "~/Views/Shared/_LayoutManagement.cshtml";
+}
+
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Management")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("TransactionApproval","Management")"><i class="fas fa-check-circle me-2"></i>Duyệt giao dịch</a></li>
+            <li class="category-item"><a href="@Url.Action("SavingsBookManagement","Management")"><i class="fas fa-book me-2"></i>Quản lý sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("TermDepositProducts","Management")"><i class="fas fa-box me-2"></i>Gói tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("TellerManagement","Management")"><i class="fas fa-users-cog me-2"></i>Quản lý nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("CustomerManagement","Management")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("DailyReports","Management")"><i class="fas fa-file-alt me-2"></i>Báo cáo nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageAppointments","Management")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "ManageAppointments" ? "active" : "")"><i class="fas fa-calendar-alt me-2"></i>Quản lý lịch hẹn</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h2 class="section-title"><i class="fas fa-calendar-alt me-2"></i>Quản lý lịch hẹn</h2>
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Danh sách lịch hẹn</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mã lịch hẹn</th>
+                                    <th>Khách hàng</th>
+                                    <th>Dịch vụ</th>
+                                    <th>Chi nhánh</th>
+                                    <th>Ngày giao dịch</th>
+                                    <th>Khung giờ</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thời gian tạo</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var appointment in Model)
+                                {
+                                    <tr>
+                                        <td>@appointment.MaLichHen</td>
+                                        <td>@appointment.KhachHang.HoTen</td>
+                                        <td>@appointment.LoaiDichVu.TenDV</td>
+                                        <td>@appointment.ChiNhanh.TenChiNhanh</td>
+                                        <td>@appointment.NgayGiaoDich.ToString("dd/MM/yyyy")</td>
+                                        <td>@appointment.KhungGio</td>
+                                        <td>
+                                            @if (appointment.TrangThai == "ChoDuyet")
+                                            {
+                                                <span class="badge bg-warning">Chờ duyệt</span>
+                                            }
+                                            else if (appointment.TrangThai == "DaDuyet")
+                                            {
+                                                <span class="badge bg-success">Đã duyệt</span>
+                                            }
+                                            else if (appointment.TrangThai == "DaHuy")
+                                            {
+                                                <span class="badge bg-danger">Đã hủy</span>
+                                            }
+                                        </td>
+                                        <td>@appointment.ThoiGianTao.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>
+                                            @if (appointment.TrangThai == "ChoDuyet")
+                                            {
+                                                <form asp-action="ApproveAppointment" method="post" class="d-inline">
+                                                    <input type="hidden" name="maLichHen" value="@appointment.MaLichHen" />
+                                                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Bạn có chắc chắn muốn duyệt lịch hẹn này?')">Duyệt</button>
+                                                </form>
+                                                <form asp-action="CancelAppointment" method="post" class="d-inline">
+                                                    <input type="hidden" name="maLichHen" value="@appointment.MaLichHen" />
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn hủy lịch hẹn này?')">Hủy</button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Không có hành động</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h5>Không có lịch hẹn nào</h5>
+                        <p class="text-muted">Hiện tại chưa có khách hàng nào đặt lịch hẹn.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

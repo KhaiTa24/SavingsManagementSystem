@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "Chuyển hướng";
+    Layout = "~/Views/Shared/_LayoutTransaction.cshtml";
+}
+
+<script>
+    window.location.href = "@Url.Action("Deposit", "BankingTransaction")";
+</script>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Đang chuyển hướng...</span>
+            </div>
+            <p>Đang chuyển hướng đến trang nạp tiền...</p>
+        </div>
+    </div>
+</div>

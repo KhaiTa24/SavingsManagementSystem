@@ -1,0 +1,121 @@
+@{
+    ViewData["Title"] = "Lịch sử giao dịch ngân hàng";
+    Layout = "_LayoutTransaction";
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Transaction")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("Customers","Transaction")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("Deposit","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Nạp tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("Withdraw","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Rút tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("OpenSavingsBook","Transaction")"><i class="fas fa-book me-2"></i>Mở sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("Create","DailyReport")"><i class="fas fa-file-alt me-2"></i>Tạo báo cáo</a></li>
+            <li class="category-item"><a href="@Url.Action("CreateNotificationPage","Transaction")"><i class="fas fa-bell me-2"></i>Tạo thông báo</a></li>
+            <li class="category-item"><a href="@Url.Action("IncidentReportPage","Transaction")"><i class="fas fa-exclamation-triangle me-2"></i>Báo cáo sự cố</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        @if (TempData["ActionMessage"] != null)
+        {
+            <div class="alert alert-success mb-3" role="alert">
+                <i class="fas fa-check-circle me-2"></i> @TempData["ActionMessage"]
+            </div>
+        }
+
+        <div class="mb-4">
+            <h2 class="section-title mb-2"><i class="fas fa-history me-2"></i>@ViewData["Title"]</h2>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-search me-2"></i>Tìm kiếm lịch sử giao dịch</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="TransactionHistory" method="get">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="accountNumber" class="form-label">Số tài khoản</label>
+                                <input type="text" class="form-control" id="accountNumber" name="accountNumber" required>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-search me-2"></i>Xem lịch sử</button>
+                            <a href="@Url.Action("Overview", "Transaction")" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Quay lại</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (ViewBag.BankAccount != null)
+        {
+            var bankAccount = ViewBag.BankAccount as HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.TaiKhoanNganHang;
+            var transactions = ViewBag.Transactions as List<HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models.GiaoDichNganHang>;
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Thông tin tài khoản</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Số tài khoản:</strong> @bankAccount.SoTaiKhoan</p>
+                            <p><strong>Khách hàng:</strong> @bankAccount.KhachHang?.HoTen</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Số dư hiện tại:</strong> @string.Format("{0:N0}", bankAccount.SoDu) đ</p>
+                            <p><strong>Trạng thái:</strong> @bankAccount.TrangThai</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Lịch sử giao dịch</h5>
+                </div>
+                <div class="card-body">
+                    @if (transactions != null && transactions.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Mã giao dịch</th>
+                                        <th>Loại giao dịch</th>
+                                        <th>Số tiền</th>
+                                        <th>Ngày giao dịch</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var transaction in transactions)
+                                    {
+                                        <tr>
+                                            <td>@transaction.MaGD</td>
+                                            <td>@transaction.LoaiGD</td>
+                                            <td>@string.Format("{0:N0}", transaction.SoTien) đ</td>
+                                            <td>@transaction.NgayGD.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>@transaction.TrangThaiGD</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Không tìm thấy lịch sử giao dịch nào.
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </section>
+</div>

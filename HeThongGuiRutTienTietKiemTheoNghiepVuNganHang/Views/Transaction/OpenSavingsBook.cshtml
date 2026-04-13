@@ -1,0 +1,163 @@
+@{
+    ViewData["Title"] = "Mở sổ tiết kiệm";
+    Layout = "_LayoutTransaction";
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Transaction")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Overview" ? "active" : "")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("Customers","Transaction")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("Deposit","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Nạp tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("Withdraw","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Rút tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("OpenSavingsBook","Transaction")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "OpenSavingsBook" ? "active" : "")"><i class="fas fa-book me-2"></i>Mở sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("Create","DailyReport")"><i class="fas fa-file-alt me-2"></i>Tạo báo cáo</a></li>
+            <li class="category-item"><a href="@Url.Action("CreateNotificationPage","Transaction")"><i class="fas fa-bell me-2"></i>Tạo thông báo</a></li>
+            <li class="category-item"><a href="@Url.Action("IncidentReportPage","Transaction")"><i class="fas fa-exclamation-triangle me-2"></i>Báo cáo sự cố</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        @if (TempData["ActionMessage"] != null)
+        {
+            <div class="alert alert-info mb-3" role="alert">
+                <i class="fas fa-info-circle me-2"></i> @TempData["ActionMessage"]
+            </div>
+        }
+
+        <div class="mb-4">
+            <h2 class="section-title mb-2"><i class="fas fa-book me-2"></i>Mở sổ tiết kiệm</h2>
+            <p class="text-muted">Nhập số tài khoản ngân hàng và thông tin mở sổ tiết kiệm theo nghiệp vụ ngân hàng.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-book me-2"></i>Thông tin mở sổ tiết kiệm
+            </div>
+            <div class="card-body">
+                <form method="post" asp-action="OpenSavingsBook" id="savingsForm">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Số tài khoản ngân hàng <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="bankAccountNumber" required />
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Gói tiết kiệm <span class="text-danger">*</span></label>
+                            <select class="form-control" name="packageId" id="packageSelect" onchange="calculateMaturityDate()" required>
+                                <option value="">-- Chọn gói tiết kiệm --</option>
+                                @{
+                                    var packages = ViewBag.SavingsPackages as List<GoiTietKiem>;
+                                    if (packages != null)
+                                    {
+                                        foreach (var package in packages)
+                                        {
+                                            <option value="@package.MaGoiTietKiem" 
+                                                    data-term="@package.KyHanThang" 
+                                                    data-rate="@package.LaiSuat.ToString("F2").Replace(".", ",")"
+                                                    data-minimum="@package.SoTienToiThieu.ToString("F2").Replace(".", ",")">
+                                                @package.TenGoi (@package.KyHanThang tháng - @package.LaiSuat.ToString("F2")%/năm)
+                                            </option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Số tiền gửi (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="amount" id="amountInput" min="100000" step="100000" onchange="calculateMaturityDate()" required />
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày mở sổ</label>
+                            <input type="date" class="form-control" name="startDate" id="startDateInput" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        </div>
+                        
+                        <!-- Thêm dropdown chọn loại tái tục -->
+                        <div class="col-md-6">
+                            <label class="form-label">Loại tái tục <span class="text-danger">*</span></label>
+                            <select class="form-control" name="renewalType" required>
+                                <option value="">-- Chọn loại tái tục --</option>
+                                <option value="Gốc">Gốc</option>
+                                <option value="Gốc + lãi">Gốc + lãi</option>
+                                <option value="Không tái tục">Không tái tục</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày đáo hạn dự kiến</label>
+                            <input type="date" class="form-control" id="maturityDateDisplay" readonly />
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Tổng số tiền (gốc + lãi) dự kiến</label>
+                            <input type="text" class="form-control" id="totalAmountDisplay" readonly />
+                        </div>
+                    </div>
+                    
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary" onclick="return confirm('Xác nhận mở sổ tiết kiệm?')">
+                            <i class="fas fa-book me-2"></i>Mở sổ tiết kiệm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    function calculateMaturityDate() {
+        const packageSelect = document.getElementById('packageSelect');
+        const amountInput = document.getElementById('amountInput');
+        const startDateInput = document.getElementById('startDateInput');
+        const maturityDateDisplay = document.getElementById('maturityDateDisplay');
+        const totalAmountDisplay = document.getElementById('totalAmountDisplay');
+        
+        if (!packageSelect.value || !amountInput.value || !startDateInput.value) {
+            maturityDateDisplay.value = '';
+            totalAmountDisplay.value = '';
+            return;
+        }
+        
+        const selectedOption = packageSelect.options[packageSelect.selectedIndex];
+        const termMonths = parseInt(selectedOption.getAttribute('data-term'));
+        // Chuẩn hóa giá trị số có dấu phẩy
+        const interestRateStr = selectedOption.getAttribute('data-rate').toString().replace(',', '.');
+        const minimumAmountStr = selectedOption.getAttribute('data-minimum').toString().replace(',', '.');
+        const interestRate = parseFloat(interestRateStr);
+        const minimumAmount = parseFloat(minimumAmountStr);
+        const amount = parseFloat(amountInput.value);
+        
+        // Check minimum amount
+        if (amount < minimumAmount) {
+            alert(`Số tiền gửi phải lớn hơn hoặc bằng ${minimumAmount.toLocaleString()} VNĐ theo gói đã chọn.`);
+            amountInput.value = '';
+            return;
+        }
+        
+        // Calculate maturity date
+        const startDate = new Date(startDateInput.value);
+        const maturityDate = new Date(startDate);
+        maturityDate.setMonth(maturityDate.getMonth() + termMonths);
+        
+        // Format and display maturity date
+        const formattedMaturityDate = maturityDate.toISOString().split('T')[0];
+        maturityDateDisplay.value = formattedMaturityDate;
+        
+        // Calculate total amount (principal + interest)
+        // Sử dụng công thức tính lãi suất theo tháng để đồng bộ với view khách hàng
+        const interest = amount * (interestRate * termMonths / 1200); // (số tiền * lãi suất * số tháng) / 1200
+        const totalAmount = amount + interest;
+        
+        // Display formatted total amount with proper decimal separator
+        totalAmountDisplay.value = totalAmount.toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + ' VNĐ';
+        
+        // Also display interest rate for verification
+        console.log("Interest rate processed:", interestRate);
+    }
+</script>

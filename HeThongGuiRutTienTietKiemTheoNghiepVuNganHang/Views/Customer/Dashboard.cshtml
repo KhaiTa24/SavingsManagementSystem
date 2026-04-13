@@ -1,0 +1,531 @@
+@{
+    ViewData["Title"] = "Bảng Điều Khiển Khách Hàng";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<!-- Hero / Greeting -->
+<section class="hero" style="background: linear-gradient(135deg, #2a5298 0%, #74a7db 100%); color: #fff; padding: 2rem 0;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 style="font-weight: 800; margin-bottom: 0.5rem;">Xin chào, @((ViewBag.User?.HoTen ?? ViewBag.User?.Email) ?? "Khách hàng")</h2>
+                <p style="opacity: 0.95;">Chào mừng bạn đến với hệ thống gửi rút tiền tiết kiệm ngân hàng — quản lý tài chính an toàn, hiệu quả.</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <!-- Đã bỏ nút hồ sơ người dùng theo yêu cầu -->
+            </div>
+        </div>
+
+        @if (ViewBag.LoginSuccess != null)
+        {
+            <div class="alert alert-success mt-3" role="alert" style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border: 2px solid #28a745; border-radius: 12px; color: #155724; font-weight: 500;">
+                <i class="fas fa-check-circle me-2"></i> @ViewBag.LoginSuccess
+            </div>
+        }
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success mt-3" role="alert" style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border: 2px solid #28a745; border-radius: 12px; color: #155724; font-weight: 500;">
+                <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger mt-3" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+            </div>
+        }
+    </div>
+</section>
+
+    <div class="container my-4">
+        <!-- Stats removed per request -->
+
+        <!-- Stats removed per request -->
+
+        <div class="row g-4">
+            <!-- Bank Accounts -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="section-title mb-1"><i class="fas fa-university me-2"></i>Tài khoản ngân hàng</h5>
+                        <p class="section-subtitle">Tổng quan các tài khoản của bạn</p>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Số tài khoản</th>
+                                        <th>Số dư</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var customerBankAccounts = ViewBag.BankAccounts as IEnumerable<dynamic>;
+                                    }
+                                    @foreach (var acc in customerBankAccounts)
+                                    {
+                                        <tr>
+                                            <td><i class="fas fa-credit-card me-2"></i>@acc.SoTaiKhoan</td>
+                                            <td><span class="badge bg-primary">@string.Format("{0:N0}", acc.SoDu) VND</span></td>
+                                            <td><span class="badge bg-success">@acc.TrangThai</span></td>
+                                        </tr>
+                                    }
+                                    @if (customerBankAccounts == null || !customerBankAccounts.Any())
+                                    {
+                                        <tr><td colspan="3" class="text-center text-muted">Chưa có tài khoản ngân hàng</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Savings Books -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="section-title mb-1"><i class="fas fa-book me-2"></i>Sổ tiết kiệm</h5>
+                        <p class="section-subtitle">Danh sách sổ tiết kiệm hiện có</p>
+                        <div class="table-responsive transaction-container">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Mã STK</th>
+                                        <th>Số TK</th>
+                                        <th>Số tiền gửi</th>
+                                        <th>Kỳ hạn</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var savingsBankAccounts = ViewBag.BankAccounts as IEnumerable<dynamic>;
+                                        var allSavingsBooks = new List<dynamic>();
+                                        
+                                        // Lấy tất cả các sổ tiết kiệm từ tất cả tài khoản
+                                        foreach (var acc in savingsBankAccounts)
+                                        {
+                                            var savingsBooks = acc.SoTietKiems as IEnumerable<dynamic>;
+                                            if (savingsBooks != null)
+                                            {
+                                                allSavingsBooks.AddRange(savingsBooks);
+                                            }
+                                        }
+                                        
+                                        // Lấy 5 sổ tiết kiệm gần nhất theo mã sổ (giả định mã lớn hơn là mới hơn)
+                                        var recentSavingsBooks = allSavingsBooks
+                                            .OrderByDescending(s => s.MaSTK)
+                                            .Take(5)
+                                            .ToList();
+                                    }
+                                    
+                                    @foreach (var s in recentSavingsBooks)
+                                    {
+                                        <tr>
+                                            <td>#@s.MaSTK</td>
+                                            <td>@s.SoTaiKhoan</td>
+                                            <td>@string.Format("{0:N0}", s.SoTienGui) VND</td>
+                                            <td>@s.KyHan tháng</td>
+                                            <td><span class="badge bg-info">@s.TrangThai</span></td>
+                                        </tr>
+                                    }
+                                    
+                                    @{
+                                        var totalSavingsBooks = allSavingsBooks.Count;
+                                    }
+                                    @if (totalSavingsBooks == 0)
+                                    {
+                                        <tr><td colspan="5" class="text-center text-muted">Chưa có sổ tiết kiệm</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-1">
+            <!-- Recent Transactions -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="section-title mb-1"><i class="fas fa-exchange-alt me-2"></i>Giao dịch tiết kiệm gần đây</h5>
+                        <p class="section-subtitle">5 giao dịch mới nhất</p>
+                        <div class="table-responsive transaction-container">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Mã GD</th>
+                                        <th>Mã STK</th>
+                                        <th>Loại</th>
+                                        <th>Số tiền</th>
+                                        <th>Ngày</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var recentSavingsTransactions = ViewBag.RecentSavingsTransactions as IEnumerable<dynamic>;
+                                    }
+                                    @foreach (var gd in recentSavingsTransactions)
+                                    {
+                                        <tr>
+                                            <td>#@gd.MaGD</td>
+                                            <td>@gd.MaSTK</td>
+                                            <td><span class="badge bg-@(gd.LoaiGD == "Gửi" ? "success" : "warning")">@gd.LoaiGD</span></td>
+                                            <td>@string.Format("{0:N0}", gd.SoTien) VND</td>
+                                            <td>@gd.NgayGD.ToString("dd/MM/yyyy")</td>
+                                        </tr>
+                                    }
+                                    @if (recentSavingsTransactions == null || !recentSavingsTransactions.Any())
+                                    {
+                                        <tr><td colspan="5" class="text-center text-muted">Chưa có giao dịch</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Bank Transactions -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="section-title mb-1"><i class="fas fa-exchange-alt me-2"></i>Giao dịch ngân hàng gần đây</h5>
+                        <p class="section-subtitle">5 giao dịch mới nhất</p>
+                        @{
+                            var bankAccountsForTransactions = ViewBag.BankAccounts as IEnumerable<dynamic>;
+                            var allBankTransactions = new List<dynamic>();
+                            if (bankAccountsForTransactions != null)
+                            {
+                                foreach (var account in bankAccountsForTransactions)
+                                {
+                                    var transactions = account.GiaoDichNganHangs as IEnumerable<dynamic>;
+                                    if (transactions != null)
+                                    {
+                                        allBankTransactions.AddRange(transactions);
+                                    }
+                                }
+                                allBankTransactions = allBankTransactions
+                                    .OrderByDescending(t => t.NgayGD)
+                                    .Take(5)
+                                    .ToList();
+                            }
+                        }
+                        @if (allBankTransactions.Any())
+                        {
+                            <div class="table-responsive transaction-container">
+                                <table class="table table-hover align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã GD</th>
+                                            <th>Số tài khoản</th>
+                                            <th>Loại</th>
+                                            <th>Số tiền</th>
+                                            <th>Ngày</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var transaction in allBankTransactions)
+                                        {
+                                            <tr>
+                                                <td>#@transaction.MaGD</td>
+                                                <td>@transaction.SoTaiKhoan</td>
+                                                <td><span class="badge bg-@(transaction.LoaiGD == "Nạp tiền" ? "success" : "warning")">@transaction.LoaiGD</span></td>
+                                                <td>@string.Format("{0:N0}", transaction.SoTien) VND</td>
+                                                <td>@transaction.NgayGD.ToString("dd/MM/yyyy")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted">
+                                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                <span>Chưa có giao dịch ngân hàng</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chatbot Container -->
+    <div class="chat-container">
+        <button class="chat-btn" id="chatBtn">
+            <i class="fas fa-comment"></i>
+        </button>
+        
+        <div class="chat-popup" id="chatPopup">
+            <div class="chat-header">
+                <h5>Chat hỗ trợ</h5>
+                <button class="btn-close" id="closeChat" style="color: white; background: none; border: none;">&times;</button>
+            </div>
+            <div class="chat-body" id="chatBody">
+                <div class="chat-message bot-message">
+                    Xin chào! Tôi là chatbot hỗ trợ khách hàng. Bạn cần giúp gì?
+                </div>
+                <div class="sample-questions mt-2">
+                    @{
+                        var sampleQuestions = new List<string>
+                        {
+                            "Cách mở sổ tiết kiệm trên hệ thống?",
+                            "Lãi suất tiết kiệm các kỳ hạn?",
+                            "Cách gửi/rút tiền tiết kiệm?",
+                            "Cách tất toán sổ tiết kiệm?",
+                            "Chức năng Dashboard khách hàng?",
+                            "Thông tin liên hệ hỗ trợ?"
+                        };
+                    }
+                    @foreach (var question in sampleQuestions)
+                    {
+                        <button class="sample-question" onclick="sendSampleQuestion('@question')">@question</button>
+                    }
+                </div>
+            </div>
+            <div class="chat-footer">
+                <form id="chatForm">
+                    <div class="input-group">
+                        <input type="text" class="chat-input" id="messageInput" placeholder="Nhập câu hỏi..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary" style="margin-left: 5px; border-radius: 20px;">Gửi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+@section Styles {
+    <style>
+        .table thead { background: #f0f4ff; }
+        .table thead th { color: #1e3c72; }
+        .badge { border-radius: 8px; }
+        .section-title { font-size: 1.3rem; font-weight: 800; color: #1e3c72; }
+        .section-subtitle { color: #6c757d; }
+        
+        /* Scrollable transaction container */
+        .transaction-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+        }
+        
+        .transaction-container thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        /* Chatbot styles */
+        .chat-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .chat-popup {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 350px;
+            height: 400px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            overflow: hidden;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #2a5298 0%, #74a7db 100%);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+        
+        .chat-footer {
+            padding: 10px;
+            background-color: white;
+            border-top: 1px solid #eee;
+        }
+        
+        .chat-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+        
+        .chat-btn {
+            background-color: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background-color: #2a5298;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .bot-message {
+            background-color: #e9ecef;
+            color: #333;
+        }
+        
+        .sample-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .sample-question {
+            background-color: #e9ecef;
+            border: none;
+            border-radius: 15px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .sample-question:hover {
+            background-color: #2a5298;
+            color: white;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Auto dismiss hero success alert after 10s
+        document.addEventListener('DOMContentLoaded', function(){
+            var alertEl = document.querySelector('.hero .alert.alert-success');
+            if (alertEl) {
+                setTimeout(function(){
+                    alertEl.classList.add('fade');
+                    alertEl.style.transition = 'opacity 0.5s ease';
+                    alertEl.style.opacity = '0';
+                    setTimeout(function(){ alertEl.remove(); }, 500);
+                }, 10000);
+            }
+            
+            // Chatbot functionality
+            const chatBtn = document.getElementById('chatBtn');
+            const chatPopup = document.getElementById('chatPopup');
+            const closeChat = document.getElementById('closeChat');
+            const chatForm = document.getElementById('chatForm');
+            const messageInput = document.getElementById('messageInput');
+            const chatBody = document.getElementById('chatBody');
+            
+            // Toggle chat popup
+            chatBtn.addEventListener('click', function() {
+                chatPopup.style.display = chatPopup.style.display === 'flex' ? 'none' : 'flex';
+            });
+            
+            // Close chat popup
+            closeChat.addEventListener('click', function() {
+                chatPopup.style.display = 'none';
+            });
+            
+            // Send message function
+            function sendMessage(message) {
+                // Add user message to chat
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.className = 'chat-message user-message';
+                userMessageDiv.textContent = message;
+                chatBody.appendChild(userMessageDiv);
+                
+                // Clear input
+                messageInput.value = '';
+                
+                // Scroll to bottom
+                chatBody.scrollTop = chatBody.scrollHeight;
+                
+                // Send message to server
+                // Sử dụng FormData thay vì JSON để tránh vấn đề với model binding
+                const formData = new FormData();
+                formData.append('message', message);
+                
+                fetch('/Customer/ProcessChatMessage', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Add bot response to chat
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.className = 'chat-message bot-message';
+                    botMessageDiv.textContent = data.response;
+                    chatBody.appendChild(botMessageDiv);
+                    
+                    // Scroll to bottom
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const errorMessageDiv = document.createElement('div');
+                    errorMessageDiv.className = 'chat-message bot-message';
+                    errorMessageDiv.textContent = 'Xin lỗi, có lỗi xảy ra. Vui lòng thử lại.';
+                    chatBody.appendChild(errorMessageDiv);
+                    
+                    // Scroll to bottom
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                });
+            }
+            
+            // Send sample question function
+            window.sendSampleQuestion = function(question) {
+                sendMessage(question);
+            };
+            
+            // Handle form submission
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // Ngăn chặn sự kiện lan rộng
+                const message = messageInput.value.trim();
+                if (message) {
+                    sendMessage(message);
+                }
+                return false; // Ngăn chặn hành vi mặc định của form
+            });
+        });
+    </script>
+}

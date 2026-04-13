@@ -1,0 +1,342 @@
+@using HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models
+@{
+    ViewData["Title"] = "Duyệt yêu cầu ";
+    Layout = "_LayoutManagement";
+}
+
+<style>
+    /* Custom tab styles */
+    .tab-savings {
+        background-color: #e8f5e9 !important; /* Light green background */
+        color: #2e7d32 !important; /* Dark green text */
+        border: 1px solid #c8e6c9 !important;
+    }
+    
+    .tab-savings:hover {
+        background-color: #c8e6c9 !important; /* Slightly darker green on hover */
+        border: 1px solid #a5d6a7 !important;
+    }
+    
+    .tab-savings.active {
+        background-color: #4caf50 !important; /* Main green background when active */
+        color: white !important; /* White text when active */
+        border: 1px solid #4caf50 !important;
+    }
+    
+    .tab-bank {
+        background-color: #e3f2fd !important; /* Light blue background */
+        color: #1565c0 !important; /* Dark blue text */
+        border: 1px solid #bbdefb !important;
+    }
+    
+    .tab-bank:hover {
+        background-color: #bbdefb !important; /* Slightly darker blue on hover */
+        border: 1px solid #90caf9 !important;
+    }
+    
+    .tab-bank.active {
+        background-color: #2196f3 !important; /* Main blue background when active */
+        color: white !important; /* White text when active */
+        border: 1px solid #2196f3 !important;
+    }
+    
+    /* Card header styles to match tabs */
+    .card-header {
+        font-weight: 500;
+    }
+    
+    .tab-content {
+        margin-top: 1rem;
+    }
+</style>
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Management")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("TransactionApproval","Management")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "TransactionApproval" ? "active" : "")"><i class="fas fa-check-circle me-2"></i>Duyệt giao dịch</a></li>
+            <li class="category-item"><a href="@Url.Action("SavingsBookManagement","Management")"><i class="fas fa-book me-2"></i>Quản lý sổ tiết kiệm</a></li>
+                        <li class="category-item"><a href="@Url.Action("TermDepositProducts","Management")"><i class="fas fa-box me-2"></i>Gói tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("TellerManagement","Management")"><i class="fas fa-users-cog me-2"></i>Quản lý nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("CustomerManagement","Management")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("DailyReports","Management")"><i class="fas fa-file-alt me-2"></i>Báo cáo nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageAppointments","Management")"><i class="fas fa-calendar-alt me-2"></i>Quản lý lịch hẹn</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        @if (ViewBag.ActionMessage != null)
+        {
+            <div class="alert alert-info mb-3" role="alert">
+                <i class="fas fa-info-circle me-2"></i> @ViewBag.ActionMessage
+            </div>
+        }
+
+        <!-- Bộ lọc gọn gàng -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter me-1"></i>Bộ lọc
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="customer">Tên khách hàng</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="type">Loại giao dịch</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="employee">Tên nhân viên</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="date">Ngày giao dịch</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="amount">Số tiền</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div id="filterInputContainer" class="d-flex align-items-center gap-2">
+                            <!-- Các input lọc sẽ được hiển thị ở đây -->
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button id="applyFilter" class="btn btn-primary">
+                            <i class="fas fa-filter me-1"></i>Áp dụng
+                        </button>
+                        <a href="@Url.Action("TransactionApproval", "Management")" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Form ẩn để submit -->
+                <form id="filterForm" method="get" asp-controller="Management" asp-action="TransactionApproval" class="d-none">
+                    <input type="hidden" name="customerName" id="filterCustomerName" value="@ViewBag.CustomerName" />
+                    <input type="hidden" name="transactionType" id="filterTransactionType" value="@ViewBag.TransactionType" />
+                    <input type="hidden" name="employeeName" id="filterEmployeeName" value="@ViewBag.EmployeeName" />
+                    <input type="hidden" name="fromDate" id="filterFromDate" value="@ViewBag.FromDate" />
+                    <input type="hidden" name="toDate" id="filterToDate" value="@ViewBag.ToDate" />
+                    <input type="hidden" name="minAmount" id="filterMinAmount" value="@ViewBag.MinAmount" />
+                    <input type="hidden" name="maxAmount" id="filterMaxAmount" value="@ViewBag.MaxAmount" />
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab để chuyển đổi giữa hai loại giao dịch -->
+        <ul class="nav nav-tabs mb-3" id="transactionTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active tab-savings" id="savings-tab" data-bs-toggle="tab" data-bs-target="#savings" type="button" role="tab">Giao dịch tiết kiệm</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link tab-bank" id="bank-tab" data-bs-toggle="tab" data-bs-target="#bank" type="button" role="tab">Giao dịch ngân hàng</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="transactionTabContent">
+            <!-- Tab giao dịch tiết kiệm -->
+            <div class="tab-pane fade show active" id="savings" role="tabpanel">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <i class="fas fa-book me-2"></i>Giao dịch tiết kiệm chờ duyệt
+                    </div>
+                    <div class="card-body p-0">
+                        @{ var pendingSavings = ViewBag.PendingSavingsTransactions as List<GiaoDichTietKiem>; }
+                        @if (pendingSavings != null && pendingSavings.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã GD</th>
+                                            <th>Loại</th>
+                                            <th>Khách hàng</th>
+                                            <th>Nhân viên GD</th>
+                                            <th>Ngày GD</th>
+                                            <th>Số tiền</th>
+                                            <th style="width:280px">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var gd in pendingSavings)
+                                        {
+                                            <tr>
+                                                <td><i class="fas fa-hashtag me-1 text-muted"></i>@gd.MaGD</td>
+                                                <td><span class="badge bg-@(gd.LoaiGD == "Gửi" ? "success" : "warning")">@gd.LoaiGD</span></td>
+                                                <td>@(gd.SoTietKiem?.TaiKhoanNganHang?.KhachHang?.HoTen ?? "N/A")</td>
+                                                <td><i class="fas fa-user-tie me-1"></i>@(gd.NhanVien?.HoTen ?? "N/A")</td>
+                                                <td>@gd.NgayGD.ToString("dd/MM/yyyy HH:mm")</td>
+                                                <td><strong>@string.Format("{0:N0}", gd.SoTien) đ</strong></td>
+                                                <td>
+                                                    <div class="d-flex gap-1">
+                                                        <form asp-controller="Management" asp-action="ApproveTransaction" method="post" class="d-inline-flex gap-1">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="maGD" value="@gd.MaGD" />
+                                                            <input type="hidden" name="transactionSource" value="Savings" />
+                                                            <button class="btn btn-success btn-sm" type="submit" onclick="return confirm('Xác nhận duyệt giao dịch này?')"><i class="fas fa-check me-1"></i>Duyệt</button>
+                                                        </form>
+                                                        <a href="@Url.Action("ShowRejectForm", "Management", new { maGD = gd.MaGD, transactionSource = "Savings" })" class="btn btn-danger btn-sm">
+                                                            <i class="fas fa-times me-1"></i>Từ chối
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted p-4">
+                                <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                Không có giao dịch tiết kiệm chờ duyệt.
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab giao dịch ngân hàng -->
+            <div class="tab-pane fade" id="bank" role="tabpanel">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-money-bill-wave me-2"></i>Giao dịch ngân hàng chờ duyệt
+                    </div>
+                    <div class="card-body p-0">
+                        @{ var pendingBank = ViewBag.PendingBankTransactions as List<GiaoDichNganHang>; }
+                        @if (pendingBank != null && pendingBank.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã GD</th>
+                                            <th>Loại</th>
+                                            <th>Khách hàng</th>
+                                            <th>Nhân viên GD</th>
+                                            <th>Ngày GD</th>
+                                            <th>Số tiền</th>
+                                            <th style="width:280px">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var gd in pendingBank)
+                                        {
+                                            <tr>
+                                                <td><i class="fas fa-hashtag me-1 text-muted"></i>@gd.MaGD</td>
+                                                <td><span class="badge bg-@(gd.LoaiGD == "Nạp tiền" ? "success" : "warning")">@gd.LoaiGD</span></td>
+                                                <td>@(gd.TaiKhoanNganHang?.KhachHang?.HoTen ?? "N/A")</td>
+                                                <td><i class="fas fa-user-tie me-1"></i>@(gd.NhanVien?.HoTen ?? "N/A")</td>
+                                                <td>@gd.NgayGD.ToString("dd/MM/yyyy HH:mm")</td>
+                                                <td><strong>@string.Format("{0:N0}", gd.SoTien) đ</strong></td>
+                                                <td>
+                                                    <div class="d-flex gap-1">
+                                                        <form asp-controller="Management" asp-action="ApproveTransaction" method="post" class="d-inline-flex gap-1">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="maGD" value="@gd.MaGD" />
+                                                            <input type="hidden" name="transactionSource" value="Bank" />
+                                                            <button class="btn btn-success btn-sm" type="submit" onclick="return confirm('Xác nhận duyệt giao dịch này?')"><i class="fas fa-check me-1"></i>Duyệt</button>
+                                                        </form>
+                                                        <a href="@Url.Action("ShowRejectForm", "Management", new { maGD = gd.MaGD, transactionSource = "Bank" })" class="btn btn-danger btn-sm">
+                                                            <i class="fas fa-times me-1"></i>Từ chối
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted p-4">
+                                <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                Không có giao dịch ngân hàng chờ duyệt.
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        let currentFilter = '';
+        
+        // Xử lý khi chọn tùy chọn lọc
+        $('.filter-option').on('click', function(e) {
+            e.preventDefault();
+            const filterType = $(this).data('filter');
+            currentFilter = filterType;
+            
+            // Xóa input hiện tại
+            $('#filterInputContainer').empty();
+            
+            // Thêm input tương ứng
+            switch(filterType) {
+                case 'customer':
+                    $('#filterInputContainer').append(`
+                        <input type="text" id="customerInput" class="form-control" placeholder="Nhập tên khách hàng" value="${$('#filterCustomerName').val()}">
+                    `);
+                    break;
+                case 'type':
+                    $('#filterInputContainer').append(`
+                        <select id="typeInput" class="form-select">
+                            <option value="">Tất cả loại</option>
+                            <option value="Gửi" ${$('#filterTransactionType').val() === 'Gửi' ? 'selected' : ''}>Gửi</option>
+                            <option value="Rút" ${$('#filterTransactionType').val() === 'Rút' ? 'selected' : ''}>Rút</option>
+                            <option value="Nạp tiền" ${$('#filterTransactionType').val() === 'Nạp tiền' ? 'selected' : ''}>Nạp tiền</option>
+                            <option value="Rút tiền" ${$('#filterTransactionType').val() === 'Rút tiền' ? 'selected' : ''}>Rút tiền</option>
+                        </select>
+                    `);
+                    break;
+                case 'employee':
+                    $('#filterInputContainer').append(`
+                        <input type="text" id="employeeInput" class="form-control" placeholder="Nhập tên nhân viên" value="${$('#filterEmployeeName').val()}">
+                    `);
+                    break;
+                case 'date':
+                    $('#filterInputContainer').append(`
+                        <input type="date" id="fromDateInput" class="form-control" value="${$('#filterFromDate').val()}" placeholder="Từ ngày">
+                        <input type="date" id="toDateInput" class="form-control" value="${$('#filterToDate').val()}" placeholder="Đến ngày">
+                    `);
+                    break;
+                case 'amount':
+                    $('#filterInputContainer').append(`
+                        <input type="number" id="minAmountInput" class="form-control" placeholder="Số tiền tối thiểu" value="${$('#filterMinAmount').val()}">
+                        <input type="number" id="maxAmountInput" class="form-control" placeholder="Số tiền tối đa" value="${$('#filterMaxAmount').val()}">
+                    `);
+                    break;
+            }
+        });
+        
+        // Xử lý khi nhấn nút Áp dụng
+        $('#applyFilter').on('click', function() {
+            // Cập nhật giá trị hidden inputs
+            switch(currentFilter) {
+                case 'customer':
+                    $('#filterCustomerName').val($('#customerInput').val());
+                    break;
+                case 'type':
+                    $('#filterTransactionType').val($('#typeInput').val());
+                    break;
+                case 'employee':
+                    $('#filterEmployeeName').val($('#employeeInput').val());
+                    break;
+                case 'date':
+                    $('#filterFromDate').val($('#fromDateInput').val());
+                    $('#filterToDate').val($('#toDateInput').val());
+                    break;
+                case 'amount':
+                    $('#filterMinAmount').val($('#minAmountInput').val());
+                    $('#filterMaxAmount').val($('#maxAmountInput').val());
+                    break;
+            }
+            
+            // Submit form
+            $('#filterForm').submit();
+        });
+    });
+</script>
+}

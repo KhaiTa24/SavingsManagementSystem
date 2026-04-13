@@ -1,0 +1,89 @@
+@{
+    ViewData["Title"] = "Tổng quan hoạt động";
+    Layout = "_LayoutTransaction";
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Transaction")" class="active"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("Customers","Transaction")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("Deposit","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Nạp tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("Withdraw","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Rút tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("OpenSavingsBook","Transaction")"><i class="fas fa-book me-2"></i>Mở sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("Create","DailyReport")"><i class="fas fa-file-alt me-2"></i>Tạo báo cáo</a></li>
+            <li class="category-item"><a href="@Url.Action("CreateNotificationPage","Transaction")"><i class="fas fa-bell me-2"></i>Tạo thông báo</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        @if (ViewBag.LoginSuccess != null)
+        {
+            <div class="alert alert-success mb-3" role="alert">
+                <i class="fas fa-check-circle me-2"></i> @ViewBag.LoginSuccess
+            </div>
+        }
+        
+        <div class="mb-4">
+            <h2 class="section-title mb-2"><i class="fas fa-chart-line me-2"></i>Tổng quan hoạt động</h2>
+            <p class="text-muted">Xin chào, <strong>@(ViewBag.User?.HoTen ?? User.Identity?.Name ?? "Nhân viên")</strong>! Chào mừng bạn đến với hệ thống quản lý giao dịch.</p>
+        </div>
+        
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon me-3"><i class="fas fa-calendar-day"></i></div>
+                            <div>
+                                <div class="stat-number">@ViewBag.CountToday</div>
+                                <div class="stat-label">Giao dịch hôm nay</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon me-3"><i class="fas fa-money-bill-wave"></i></div>
+                            <div>
+                                <div class="stat-number">@string.Format("{0:N0}", ViewBag.TotalTodayAmount) đ</div>
+                                <div class="stat-label">Tổng tiền hôm nay</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon me-3"><i class="fas fa-calendar-week"></i></div>
+                            <div>
+                                <div class="stat-number">@ViewBag.CountWeek</div>
+                                <div class="stat-label">Tuần này</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon me-3"><i class="fas fa-calendar-alt"></i></div>
+                            <div>
+                                <div class="stat-number">@ViewBag.CountMonth</div>
+                                <div class="stat-label">Tháng này</div>
+                                <div class="stat-label mt-1">Tổng: @string.Format("{0:N0}", ViewBag.TotalMonthAmount) đ</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

@@ -1,0 +1,46 @@
+@using HeThongGuiRutTienTietKiemTheoNghiepVuNganHang.Models
+@{
+    ViewData["Title"] = "Tra cứu khách hàng";
+}
+
+<div class="main-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Transaction")" class="active"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("Customers","Transaction")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("Deposit","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Nạp tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("Withdraw","BankingTransaction")"><i class="fas fa-money-bill-wave me-2"></i>Rút tiền</a></li>
+            <li class="category-item"><a href="@Url.Action("OpenSavingsBook","Transaction")"><i class="fas fa-book me-2"></i>Mở sổ tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("Create","DailyReport")"><i class="fas fa-file-alt me-2"></i>Tạo báo cáo</a></li>
+            <li class="category-item"><a href="@Url.Action("CreateNotificationPage","Transaction")"><i class="fas fa-bell me-2"></i>Tạo thông báo</a></li>
+            <li class="category-item"><a href="@Url.Action("IncidentReportPage","Transaction")"><i class="fas fa-exclamation-triangle me-2"></i>Báo cáo sự cố</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        <h2>Tra cứu khách hàng</h2>
+        <form asp-controller="Transaction" asp-action="SearchCustomers" method="post" style="margin-top:1rem">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label class="form-label">Nhập CCCD / Email / SĐT</label>
+                <input class="form-control" type="text" name="query" placeholder="Ví dụ: 012345678901 hoặc email@domain.com" />
+            </div>
+            <button class="btn btn-primary" type="submit">Tra cứu</button>
+        </form>
+
+        @{ var results = ViewBag.SearchResults as List<User>; }
+        @if (results != null)
+        {
+            <div style="margin-top:1rem">
+                <h3>Kết quả</h3>
+                <ul>
+                    @foreach (var u in results)
+                    {
+                        <li>@u.HoTen - @u.Email - @u.SDT - CCCD: @u.CCCD</li>
+                    }
+                </ul>
+            </div>
+        }
+    </section>
+</div>

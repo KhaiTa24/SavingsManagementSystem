@@ -1,0 +1,77 @@
+@{
+    ViewData["Title"] = "Giám sát hệ thống";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Quản trị</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Admin")" class="active"><i class="fas fa-tachometer-alt me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("UserManagement","Admin")"><i class="fas fa-users-cog me-2"></i>Quản lý người dùng</a></li>
+            <li class="category-item"><a href="@Url.Action("LoginHistory","Admin")"><i class="fas fa-history me-2"></i>Lịch sử đăng nhập</a></li>
+            <li class="category-item"><a href="@Url.Action("ActiveSessions","Admin")"><i class="fas fa-user-clock me-2"></i>Session đang hoạt động</a></li>
+            <li class="category-item"><a href="@Url.Action("SuspiciousLogins","Admin")"><i class="fas fa-exclamation-triangle me-2"></i>Đăng nhập bất thường</a></li>
+            <li class="category-item"><a href="@Url.Action("RoleManagement","Admin")"><i class="fas fa-user-tag me-2"></i>Quản lý vai trò</a></li>
+            <li class="category-item"><a href="@Url.Action("SystemNotifications","Admin")"><i class="fas fa-bullhorn me-2"></i>Thông báo hệ thống</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageBranches","Admin")"><i class="fas fa-building me-2"></i>Quản lý chi nhánh</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageServices","Admin")"><i class="fas fa-concierge-bell me-2"></i>Quản lý loại dịch vụ</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon me-3"><i class="fas fa-exchange-alt"></i></div>
+                            <div>
+                                <div class="stat-number">@ViewBag.TodayTransactionCount</div>
+                                <div class="stat-label">GD hôm nay</div>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <strong>Tổng tiền:</strong> @string.Format("{0:N0}", (ViewBag.TodayTransactionAmount ?? 0)) đ
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon me-3"><i class="fas fa-clock"></i></div>
+                            <div>
+                                <div class="stat-number">@ViewBag.PendingTransactions</div>
+                                <div class="stat-label">Chờ duyệt</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon me-3"><i class="fas fa-book"></i></div>
+                            <div>
+                                <div class="stat-number">@ViewBag.ActiveSavingsBooks</div>
+                                <div class="stat-label">Sổ hoạt động</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><i class="fas fa-desktop me-2"></i>Giám sát thời gian thực</div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> Placeholder – có thể tích hợp SignalR để cập nhật real-time.
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

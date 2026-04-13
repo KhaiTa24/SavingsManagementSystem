@@ -1,0 +1,91 @@
+@{
+    ViewData["Title"] = "Xác thực OTP";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+    var purpose = ViewBag.Purpose as string;
+    var purposeText = purpose == "OpenSavingsAccount" ? "mở sổ tiết kiệm" : "thực hiện tác vụ";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-key me-2"></i>Xác thực OTP</h3>
+                </div>
+                <div class="card-body">
+                    <p>Vui lòng nhập mã OTP đã được gửi đến email của bạn để tiếp tục @purposeText.</p>
+                    
+                    <!-- Countdown Timer Display -->
+                    <div class="alert alert-info text-center" id="countdownTimer">
+                        <h5><i class="fas fa-clock me-2"></i>Thời gian còn lại: <span id="timer">90</span> giây</h5>
+                        <small>Mã OTP sẽ hết hiệu lực sau khi hết thời gian</small>
+                    </div>
+                    
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                    }
+                    
+                    @if (TempData["InfoMessage"] != null)
+                    {
+                        <div class="alert alert-info">@TempData["InfoMessage"]</div>
+                    }
+                    
+                    <form asp-action="VerifyOTP" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="purpose" value="@purpose" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Mã OTP</label>
+                            <input type="text" class="form-control" name="otpCode" placeholder="Nhập mã OTP 6 chữ số" required maxlength="6" />
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" id="verifyBtn">
+                                <i class="fas fa-check me-2"></i>Xác thực
+                            </button>
+                            
+                            <a href="@Url.Action("Dashboard", "Customer")" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Countdown timer functionality
+        var countdown = 90; // 90 seconds
+        var timerElement = document.getElementById('timer');
+        var verifyBtn = document.getElementById('verifyBtn');
+        var countdownTimer = document.getElementById('countdownTimer');
+        
+        var timer = setInterval(function() {
+            countdown--;
+            timerElement.textContent = countdown;
+            
+            // Update color based on remaining time
+            if (countdown <= 30) {
+                countdownTimer.className = "alert alert-warning text-center";
+            }
+            
+            if (countdown <= 10) {
+                countdownTimer.className = "alert alert-danger text-center";
+            }
+            
+            // Disable button and show message when time expires
+            if (countdown <= 0) {
+                clearInterval(timer);
+                verifyBtn.disabled = true;
+                verifyBtn.innerHTML = '<i class="fas fa-times me-2"></i>Hết thời gian';
+                countdownTimer.className = "alert alert-danger text-center";
+                countdownTimer.innerHTML = '<h5><i class="fas fa-exclamation-triangle me-2"></i>Đã hết thời gian xác thực</h5>' +
+                                          '<small>Vui lòng yêu cầu mã OTP mới</small>';
+            }
+        }, 1000);
+    </script>
+}

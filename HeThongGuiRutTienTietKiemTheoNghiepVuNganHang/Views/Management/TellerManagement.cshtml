@@ -1,0 +1,182 @@
+@{
+    ViewData["Title"] = "Quản lý nhân viên";
+    Layout = "_LayoutManagement";
+    var stats = ViewBag.TellerStats as IEnumerable<dynamic>;
+}
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3><i class="fas fa-bars me-2"></i>Chức năng</h3>
+        <ul class="category-list">
+            <li class="category-item"><a href="@Url.Action("Overview","Management")"><i class="fas fa-chart-line me-2"></i>Tổng quan</a></li>
+            <li class="category-item"><a href="@Url.Action("TransactionApproval","Management")"><i class="fas fa-check-circle me-2"></i>Duyệt giao dịch</a></li>
+            <li class="category-item"><a href="@Url.Action("SavingsBookManagement","Management")"><i class="fas fa-book me-2"></i>Quản lý sổ tiết kiệm</a></li>
+                        <li class="category-item"><a href="@Url.Action("TermDepositProducts","Management")"><i class="fas fa-box me-2"></i>Gói tiết kiệm</a></li>
+            <li class="category-item"><a href="@Url.Action("TellerManagement","Management")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "TellerManagement" ? "active" : "")"><i class="fas fa-users-cog me-2"></i>Quản lý nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("CustomerManagement","Management")"><i class="fas fa-users me-2"></i>Quản lý khách hàng</a></li>
+            <li class="category-item"><a href="@Url.Action("DailyReports","Management")"><i class="fas fa-file-alt me-2"></i>Báo cáo nhân viên</a></li>
+            <li class="category-item"><a href="@Url.Action("ManageAppointments","Management")"><i class="fas fa-calendar-alt me-2"></i>Quản lý lịch hẹn</a></li>
+        </ul>
+    </aside>
+
+    <section class="content">
+        <!-- Bộ lọc gọn gàng -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter me-1"></i>Bộ lọc
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="name">Tên nhân viên</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="email">Email</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="username">Tên đăng nhập</a></li>
+                                <li><a class="dropdown-item filter-option" href="#" data-filter="transactions">Số giao dịch</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div id="filterInputContainer" class="d-flex align-items-center gap-2">
+                            <!-- Các input lọc sẽ được hiển thị ở đây -->
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button id="applyFilter" class="btn btn-primary">
+                            <i class="fas fa-filter me-1"></i>Áp dụng
+                        </button>
+                        <a href="@Url.Action("TellerManagement", "Management")" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Form ẩn để submit -->
+                <form id="filterForm" method="get" asp-controller="Management" asp-action="TellerManagement" class="d-none">
+                    <input type="hidden" name="name" id="filterName" value="@ViewBag.Name" />
+                    <input type="hidden" name="email" id="filterEmail" value="@ViewBag.Email" />
+                    <input type="hidden" name="username" id="filterUsername" value="@ViewBag.Username" />
+                    <input type="hidden" name="minTransactions" id="filterMinTransactions" value="@ViewBag.MinTransactions" />
+                    <input type="hidden" name="maxTransactions" id="filterMaxTransactions" value="@ViewBag.MaxTransactions" />
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-users-cog me-2"></i>Hiệu suất nhân viên giao dịch
+            </div>
+            <div class="card-body p-0">
+                @if (stats != null && stats.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
+                                    <th>Tên đăng nhập</th>
+                                    <th>Tổng giao dịch</th>
+                                    <th>Hôm nay</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var s in stats)
+                                {
+                                    <tr>
+                                        <td><i class="fas fa-user-tie me-1"></i>@(s.Teller?.HoTen ?? s.Teller?.UserName ?? "N/A")</td>
+                                        <td>@(s.Teller?.Email ?? "N/A")</td>
+                                        <td>@(s.Teller?.UserName ?? "N/A")</td>
+                                        <td><strong>@(s.TotalTransactions ?? 0)</strong></td>
+                                        <td><span class="badge bg-info">@(s.TodayTransactions ?? 0)</span></td>
+                                        <td>
+                                            <a href="@Url.Action("EmployeeTransactionDetails", "Management", new { id = s.Teller?.Id })" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-list me-1"></i>Xem chi tiết
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted p-4">
+                        <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                        Không có dữ liệu nhân viên giao dịch.
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        let currentFilter = '';
+        
+        // Xử lý khi chọn tùy chọn lọc
+        $('.filter-option').on('click', function(e) {
+            e.preventDefault();
+            const filterType = $(this).data('filter');
+            currentFilter = filterType;
+            
+            // Xóa input hiện tại
+            $('#filterInputContainer').empty();
+            
+            // Thêm input tương ứng
+            switch(filterType) {
+                case 'name':
+                    $('#filterInputContainer').append(`
+                        <input type="text" id="nameInput" class="form-control" placeholder="Nhập tên nhân viên" value="${$('#filterName').val()}">
+                    `);
+                    break;
+                case 'email':
+                    $('#filterInputContainer').append(`
+                        <input type="email" id="emailInput" class="form-control" placeholder="Nhập email" value="${$('#filterEmail').val()}">
+                    `);
+                    break;
+                case 'username':
+                    $('#filterInputContainer').append(`
+                        <input type="text" id="usernameInput" class="form-control" placeholder="Nhập tên đăng nhập" value="${$('#filterUsername').val()}">
+                    `);
+                    break;
+                case 'transactions':
+                    $('#filterInputContainer').append(`
+                        <input type="number" id="minTransactionsInput" class="form-control" placeholder="Giao dịch tối thiểu" value="${$('#filterMinTransactions').val()}">
+                        <input type="number" id="maxTransactionsInput" class="form-control" placeholder="Giao dịch tối đa" value="${$('#filterMaxTransactions').val()}">
+                    `);
+                    break;
+            }
+        });
+        
+        // Xử lý khi nhấn nút Áp dụng
+        $('#applyFilter').on('click', function() {
+            // Cập nhật giá trị hidden inputs
+            switch(currentFilter) {
+                case 'name':
+                    $('#filterName').val($('#nameInput').val());
+                    break;
+                case 'email':
+                    $('#filterEmail').val($('#emailInput').val());
+                    break;
+                case 'username':
+                    $('#filterUsername').val($('#usernameInput').val());
+                    break;
+                case 'transactions':
+                    $('#filterMinTransactions').val($('#minTransactionsInput').val());
+                    $('#filterMaxTransactions').val($('#maxTransactionsInput').val());
+                    break;
+            }
+            
+            // Submit form
+            $('#filterForm').submit();
+        });
+    });
+</script>
+}
